@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition, useRef } from 'react';
+import { Suspense, useEffect, useState, useTransition, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { loadStripe, type Stripe, type StripeElements } from '@stripe/stripe-js';
 import { ShieldCheck, Lock } from 'lucide-react';
@@ -16,6 +16,14 @@ const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   : null;
 
 export default function CheckoutPaymentPage() {
+  return (
+    <Suspense fallback={<div className="flex flex-col items-center justify-center py-16 gap-4"><div className="w-8 h-8 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} /></div>}>
+      <CheckoutPaymentInner />
+    </Suspense>
+  );
+}
+
+function CheckoutPaymentInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 

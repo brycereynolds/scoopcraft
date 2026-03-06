@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { Package, ChevronRight, IceCream } from 'lucide-react';
 import { getUserOrders } from '@/actions/orders';

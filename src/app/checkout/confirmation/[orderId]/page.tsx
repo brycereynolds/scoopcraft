@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { CheckCircle2, Star, Package } from 'lucide-react';
 import { getOrder } from '@/actions/orders';

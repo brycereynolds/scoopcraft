@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { getLoyaltyAccount } from "@/actions/loyalty";
 import { LOYALTY_TIERS } from "@/lib/loyalty";
 import type { LoyaltyAccountWithHistory, LoyaltyTransaction } from "@/actions/loyalty";

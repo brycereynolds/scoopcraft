@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { Suspense, useEffect, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tag, Star, IceCream } from 'lucide-react';
 import { getCart, getCartTotals } from '@/actions/cart';
@@ -13,6 +13,14 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 
 export default function CheckoutReviewPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-16"><div className="w-8 h-8 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} /></div>}>
+      <CheckoutReviewInner />
+    </Suspense>
+  );
+}
+
+function CheckoutReviewInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 

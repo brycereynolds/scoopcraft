@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { Suspense, useEffect, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MapPin, Clock, Store } from 'lucide-react';
 import { getDeliverySlots } from '@/actions/orders';
@@ -22,6 +22,14 @@ interface DeliveryAddress {
 const STORE_ADDRESS = '123 Scoop Street, Ice Cream City, CA 90210';
 
 export default function CheckoutDeliveryPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-16"><div className="w-8 h-8 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} /></div>}>
+      <CheckoutDeliveryInner />
+    </Suspense>
+  );
+}
+
+function CheckoutDeliveryInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 

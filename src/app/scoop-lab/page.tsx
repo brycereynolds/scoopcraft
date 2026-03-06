@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { getScoopLabItems } from '@/actions/scoop-lab';
 import { ScoopLabBuilder } from './scoop-lab-builder';
 import { Wand2 } from 'lucide-react';
