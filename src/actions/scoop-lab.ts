@@ -65,48 +65,53 @@ export async function getScoopLabItems(): Promise<{
   sauces: MenuItem[];
   vessels: MenuItem[];
 }> {
-  const rows = await db
-    .select({
-      id: menuItems.id,
-      name: menuItems.name,
-      description: menuItems.description,
-      price: menuItems.price,
-      category: menuItems.category,
-      availabilityType: menuItems.availabilityType,
-      isAvailable: menuItems.isAvailable,
-      allergens: menuItems.allergens,
-      dietaryFlags: menuItems.dietaryFlags,
-      calories: menuItems.calories,
-      photoUrl: menuItems.photoUrl,
-      sortOrder: menuItems.sortOrder,
-    })
-    .from(menuItems)
-    .where(eq(menuItems.isAvailable, true))
-    .orderBy(menuItems.sortOrder);
+  try {
+    const rows = await db
+      .select({
+        id: menuItems.id,
+        name: menuItems.name,
+        description: menuItems.description,
+        price: menuItems.price,
+        category: menuItems.category,
+        availabilityType: menuItems.availabilityType,
+        isAvailable: menuItems.isAvailable,
+        allergens: menuItems.allergens,
+        dietaryFlags: menuItems.dietaryFlags,
+        calories: menuItems.calories,
+        photoUrl: menuItems.photoUrl,
+        sortOrder: menuItems.sortOrder,
+      })
+      .from(menuItems)
+      .where(eq(menuItems.isAvailable, true))
+      .orderBy(menuItems.sortOrder);
 
-  const flavors: MenuItem[] = [];
-  const toppings: MenuItem[] = [];
-  const sauces: MenuItem[] = [];
-  const vessels: MenuItem[] = [];
+    const flavors: MenuItem[] = [];
+    const toppings: MenuItem[] = [];
+    const sauces: MenuItem[] = [];
+    const vessels: MenuItem[] = [];
 
-  for (const row of rows) {
-    switch (row.category) {
-      case "flavor":
-        flavors.push(row);
-        break;
-      case "topping":
-        toppings.push(row);
-        break;
-      case "sauce":
-        sauces.push(row);
-        break;
-      case "vessel":
-        vessels.push(row);
-        break;
+    for (const row of rows) {
+      switch (row.category) {
+        case "flavor":
+          flavors.push(row);
+          break;
+        case "topping":
+          toppings.push(row);
+          break;
+        case "sauce":
+          sauces.push(row);
+          break;
+        case "vessel":
+          vessels.push(row);
+          break;
+      }
     }
-  }
 
-  return { flavors, toppings, sauces, vessels };
+    return { flavors, toppings, sauces, vessels };
+  } catch (error) {
+    console.error("getScoopLabItems: database error:", error);
+    return { flavors: [], toppings: [], sauces: [], vessels: [] };
+  }
 }
 
 // ─── createScoopLabConfig ─────────────────────────────────────────────────────
