@@ -5,6 +5,7 @@ import { db } from "@/db"
 import { orders, subscriptions } from "@/db/schema"
 import { eq } from "drizzle-orm"
 import { emitOrderUpdate } from "@/lib/sse"
+import { syncSubscriptionToDb } from "@/lib/stripe-helpers"
 
 export const dynamic = "force-dynamic"
 
@@ -28,9 +29,10 @@ export async function POST(req: NextRequest) {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
     )
-  } catch (err: any) {
-    console.error("Stripe webhook signature verification failed:", err.message)
-    return new Response(`Webhook Error: ${err.message}`, { status: 400 })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error"
+    console.error("Stripe webhook signature verification failed:", message)
+    return new Response(`Webhook Error: ${message}`, { status: 400 })
   }
 
   console.log(`Processing Stripe webhook: ${event.type} [${event.id}]`)
@@ -38,7 +40,7 @@ export async function POST(req: NextRequest) {
   try {
     switch (event.type) {
       case "payment_intent.succeeded": {
-        const pi = event.data.object as any
+        const pi = event.data.object as Stripe.PaymentIntent
         const [order] = await db
           .select({ id: orders.id, status: orders.status })
           .from(orders)
@@ -50,7 +52,7 @@ export async function POST(req: NextRequest) {
             .set({
               status: "confirmed",
               confirmedAt: new Date(),
-              stripeChargeId: pi.latest_charge,
+              stripeChargeId: typeof pi.latest_charge === "string" ? pi.latest_charge : null,
               updatedAt: new Date(),
             })
             .where(eq(orders.id, order.id))
@@ -63,7 +65,8 @@ export async function POST(req: NextRequest) {
       }
 
       case "payment_intent.payment_failed": {
-        const pi = event.data.object as any
+        const pi = event.data.object as Stripe.PaymentIntent
+        console.log(`payment_intent.payment_failed for PI ${pi.id}`)
         const [order] = await db
           .select({ id: orders.id, status: orders.status })
           .from(orders)
@@ -78,33 +81,38 @@ export async function POST(req: NextRequest) {
         break
       }
 
-      case "customer.subscription.updated": {
-        const sub = event.data.object as any
+      case "customer.subscription.created": {
+        const sub = event.data.object as Stripe.Subscription
+        // The subscription row may already exist (created optimistically in createSubscription action).
+        // If it does, sync its status; if not, log and skip — the action is the authoritative creator.
         const [existingSub] = await db
           .select({ id: subscriptions.id })
           .from(subscriptions)
           .where(eq(subscriptions.stripeSubscriptionId, sub.id))
 
         if (existingSub) {
-          await db
-            .update(subscriptions)
-            .set({
-              status: sub.status === "active" ? "active"
-                : sub.status === "past_due" ? "past_due"
-                : sub.status === "paused" ? "paused"
-                : "cancelled",
-              currentPeriodStart: new Date(sub.current_period_start * 1000),
-              currentPeriodEnd: new Date(sub.current_period_end * 1000),
-              cancelAtPeriodEnd: sub.cancel_at_period_end,
-              updatedAt: new Date(),
-            })
-            .where(eq(subscriptions.id, existingSub.id))
+          await syncSubscriptionToDb(sub)
+        } else {
+          console.log(`customer.subscription.created: no local record for ${sub.id}, skipping`)
+        }
+        break
+      }
+
+      case "customer.subscription.updated": {
+        const sub = event.data.object as Stripe.Subscription
+        const [existingSub] = await db
+          .select({ id: subscriptions.id })
+          .from(subscriptions)
+          .where(eq(subscriptions.stripeSubscriptionId, sub.id))
+
+        if (existingSub) {
+          await syncSubscriptionToDb(sub)
         }
         break
       }
 
       case "customer.subscription.deleted": {
-        const sub = event.data.object as any
+        const sub = event.data.object as Stripe.Subscription
         await db
           .update(subscriptions)
           .set({ status: "cancelled", updatedAt: new Date() })
@@ -112,9 +120,27 @@ export async function POST(req: NextRequest) {
         break
       }
 
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object as Stripe.Invoice
+        if (invoice.subscription && typeof invoice.subscription === "string") {
+          // Mark the subscription active on successful payment
+          await db
+            .update(subscriptions)
+            .set({
+              status: "active",
+              paymentFailedAt: null,
+              paymentRetryCount: 0,
+              updatedAt: new Date(),
+            })
+            .where(eq(subscriptions.stripeSubscriptionId, invoice.subscription))
+          console.log(`invoice.payment_succeeded for subscription ${invoice.subscription}`)
+        }
+        break
+      }
+
       case "invoice.payment_failed": {
-        const invoice = event.data.object as any
-        if (invoice.subscription) {
+        const invoice = event.data.object as Stripe.Invoice
+        if (invoice.subscription && typeof invoice.subscription === "string") {
           await db
             .update(subscriptions)
             .set({
@@ -124,6 +150,7 @@ export async function POST(req: NextRequest) {
             })
             .where(eq(subscriptions.stripeSubscriptionId, invoice.subscription))
           // TODO: Send payment failure email + increment retry count
+          console.log(`invoice.payment_failed for subscription ${invoice.subscription}`)
         }
         break
       }
