@@ -136,9 +136,5 @@ declare module "next-auth" {
   }
 }
 
-declare module "next-auth/jwt" {
-  interface JWT {
-    id?: string
-    role?: string
-  }
-}
+// JWT type is extended inline via next-auth module augmentation above
+// next-auth v5 beta does not support next-auth/jwt module augmentation

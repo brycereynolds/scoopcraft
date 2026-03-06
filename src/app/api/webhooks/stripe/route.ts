@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server"
+import Stripe from "stripe"
 import { stripe } from "@/lib/stripe"
 import { db } from "@/db"
 import { orders, subscriptions } from "@/db/schema"
@@ -19,14 +20,14 @@ export async function POST(req: NextRequest) {
     return new Response("Missing stripe-signature header", { status: 400 })
   }
 
-  let event: ReturnType<typeof stripe.webhooks.constructEvent> extends Promise<infer T> ? T : never
+  let event: Stripe.Event
 
   try {
     event = stripe.webhooks.constructEvent(
       body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
-    ) as any
+    )
   } catch (err: any) {
     console.error("Stripe webhook signature verification failed:", err.message)
     return new Response(`Webhook Error: ${err.message}`, { status: 400 })
