@@ -19,17 +19,18 @@ export async function POST(req: NextRequest) {
     return new Response("Missing stripe-signature header", { status: 400 })
   }
 
-  let event: ReturnType<typeof stripe.webhooks.constructEvent> extends Promise<infer T> ? T : never
+  let event: Awaited<ReturnType<typeof stripe.webhooks.constructEventAsync>>
 
   try {
-    event = stripe.webhooks.constructEvent(
+    event = await stripe.webhooks.constructEventAsync(
       body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
-    ) as any
-  } catch (err: any) {
-    console.error("Stripe webhook signature verification failed:", err.message)
-    return new Response(`Webhook Error: ${err.message}`, { status: 400 })
+    )
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error"
+    console.error("Stripe webhook signature verification failed:", message)
+    return new Response(`Webhook Error: ${message}`, { status: 400 })
   }
 
   console.log(`Processing Stripe webhook: ${event.type} [${event.id}]`)

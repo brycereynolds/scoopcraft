@@ -121,24 +121,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 })
 
-// Extend NextAuth types
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string
-      email: string
-      name?: string | null
-      role: string
-    }
-  }
-  interface User {
-    role?: string
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id?: string
-    role?: string
-  }
-}
+// Type augmentations for next-auth are in src/types/next-auth.d.ts

@@ -82,11 +82,12 @@ export async function loginAction(formData: FormData) {
       redirect: false,
     })
     return { success: true }
-  } catch (error: any) {
-    if (error?.message === "RateLimited") {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : ""
+    if (message === "RateLimited") {
       return { success: false, error: "Too many failed attempts. Please try again in 15 minutes." }
     }
-    if (error?.message === "EmailNotVerified") {
+    if (message === "EmailNotVerified") {
       return { success: false, error: "Please verify your email before logging in." }
     }
     return { success: false, error: "Invalid email or password" }
