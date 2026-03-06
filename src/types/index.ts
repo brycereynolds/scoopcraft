@@ -79,3 +79,52 @@ export type DeliverySlot = {
   maxOrders: number;
   currentOrders: number;
 };
+
+export type MenuItemWithPhoto = {
+  id: number;
+  name: string;
+  description: string | null;
+  price: string;
+  category: 'flavor' | 'topping' | 'sauce' | 'vessel' | 'extra';
+  photoUrl: string | null;
+  isVegan: boolean;
+  isDairyFree: boolean;
+  isGlutenFree: boolean;
+  isAvailable: boolean;
+  availabilityType: string;
+  calories: number | null;
+};
+
+// Scoop Lab builder types
+
+export type ScoopLabMenuItem = {
+  id: number;
+  name: string;
+  description: string | null;
+  price: string;
+  category: 'flavor' | 'topping' | 'sauce' | 'vessel' | 'extra';
+  availabilityType: 'permanent' | 'seasonal' | 'limited_drop' | 'flavor_of_day' | 'flavor_of_week';
+  isAvailable: boolean;
+  allergens: string[] | null;
+  dietaryFlags: string[] | null;
+  calories: number | null;
+  photoUrl: string | null;
+  sortOrder: number;
+};
+
+export type ScoopLabItems = {
+  vessels: ScoopLabMenuItem[];
+  flavors: ScoopLabMenuItem[];
+  toppings: ScoopLabMenuItem[];
+  sauces: ScoopLabMenuItem[];
+  extras: ScoopLabMenuItem[];
+};
+
+export type ScoopLabSelection = {
+  vessel: number | null;
+  scoops: Array<{ flavorId: number; position: number }>;
+  toppings: number[];
+  sauces: number[];
+  extras: number[];
+  name: string;
+};
