@@ -39,3 +39,43 @@ export interface CheckoutTotals {
   tax: number
   total: number
 }
+
+export type CreateOrderInput = {
+  type: 'delivery' | 'pickup';
+  addressId?: number;
+  deliverySlotId?: number;
+  promoCode?: string;
+  loyaltyPointsToRedeem?: number;
+  tipAmount?: number;
+};
+
+export type CartWithItems = {
+  id: number;
+  userId: number;
+  items: CartItemDetail[];
+  updatedAt: Date;
+};
+
+export type CartItemDetail = {
+  id: number;
+  menuItem: {
+    id: number;
+    name: string;
+    price: string;
+    category: string;
+    photoUrl?: string;
+  };
+  quantity: number;
+  scoopLabConfig?: ScoopLabConfig;
+  subtotal: number;
+};
+
+export type DeliverySlot = {
+  id: number;
+  date: string;
+  startTime: string;
+  endTime: string;
+  available: boolean;
+  maxOrders: number;
+  currentOrders: number;
+};

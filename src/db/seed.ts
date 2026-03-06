@@ -11,6 +11,7 @@ import {
   menuItems,
   subscriptionPlans,
   achievementDefinitions,
+  deliverySlots,
 } from "./schema"
 
 async function seed() {
@@ -182,6 +183,46 @@ async function seed() {
     .returning()
 
   console.log("Achievements inserted:", insertedAchievements.length)
+
+  // 5. Delivery slots — next 7 days, 4 slots per day
+  const slotTimes = [
+    { startTime: "09:00", endTime: "11:00", label: "morning" },
+    { startTime: "11:00", endTime: "13:00", label: "midday" },
+    { startTime: "14:00", endTime: "16:00", label: "afternoon" },
+    { startTime: "18:00", endTime: "20:00", label: "evening" },
+  ]
+
+  const deliverySlotValues: Array<{
+    slotDate: string;
+    startTime: string;
+    endTime: string;
+    maxOrders: number;
+    isActive: boolean;
+  }> = []
+
+  for (let dayOffset = 1; dayOffset <= 7; dayOffset++) {
+    const date = new Date()
+    date.setDate(date.getDate() + dayOffset)
+    const slotDate = date.toISOString().split("T")[0]
+
+    for (const slot of slotTimes) {
+      deliverySlotValues.push({
+        slotDate,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        maxOrders: 10,
+        isActive: true,
+      })
+    }
+  }
+
+  const insertedSlots = await db
+    .insert(deliverySlots)
+    .values(deliverySlotValues)
+    .onConflictDoNothing()
+    .returning()
+
+  console.log("Delivery slots inserted:", insertedSlots.length)
 
   console.log("Seed complete!")
   process.exit(0)
