@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - name: Lint
         run: npm run lint
         continue-on-error: true  # Remove once ESLint config is set up by engineering-manager
@@ -33,7 +33,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - name: Run Tests
         run: npm test -- --reporter=verbose
         continue-on-error: true  # Remove once Vitest tests are written by engineering-manager
@@ -52,7 +52,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - name: Build
         run: npm run build
         continue-on-error: true  # Remove once engineering-manager completes Next.js scaffold
