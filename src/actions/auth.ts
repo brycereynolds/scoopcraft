@@ -8,6 +8,7 @@ import { hash } from "@node-rs/argon2"
 import { nanoid } from "nanoid"
 import { z } from "zod"
 import { redirect } from "next/navigation"
+import { sendVerificationEmail, sendPasswordResetEmail } from "@/lib/email"
 
 const signupSchema = z.object({
   email: z.string().email("Valid email required"),
@@ -68,8 +69,7 @@ export async function signupAction(formData: FormData) {
     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
   })
 
-  // TODO: Send verification email via Resend
-  // await sendVerificationEmail(email, token)
+  await sendVerificationEmail(email, token)
 
   return { success: true, message: "Account created! Please check your email to verify your account." }
 }
@@ -139,8 +139,7 @@ export async function requestPasswordResetAction(formData: FormData) {
     expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
   })
 
-  // TODO: Send password reset email via Resend
-  // await sendPasswordResetEmail(email.data, token)
+  await sendPasswordResetEmail(email.data, token)
 
   return { success: true }
 }

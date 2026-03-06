@@ -4,7 +4,8 @@ import { stripe } from "@/lib/stripe"
 import { db } from "@/db"
 import { orders, subscriptions } from "@/db/schema"
 import { eq } from "drizzle-orm"
-import { emitOrderUpdate } from "@/lib/sse"
+import { emitOrderUpdate, emitNewOrder } from "@/lib/sse"
+import { sendOrderConfirmationEmail } from "@/lib/email"
 import { syncSubscriptionToDb } from "@/lib/stripe-helpers"
 
 export const dynamic = "force-dynamic"
@@ -58,8 +59,20 @@ export async function POST(req: NextRequest) {
             .where(eq(orders.id, order.id))
 
           emitOrderUpdate(order.id, "confirmed")
-          // TODO: Send order confirmation email
-          // TODO: Emit new order event for admin queue
+          emitNewOrder(order.id)
+          // Fire order confirmation email — needs the customer's email address
+          // We look up the order with user email here
+          const { db: dbInstance } = await import("@/db")
+          const { orders: ordersTable, users: usersTable } = await import("@/db/schema")
+          const { eq: eqOp } = await import("drizzle-orm")
+          const [orderWithUser] = await dbInstance
+            .select({ userEmail: usersTable.email })
+            .from(ordersTable)
+            .innerJoin(usersTable, eqOp(ordersTable.userId, usersTable.id))
+            .where(eqOp(ordersTable.id, order.id))
+          if (orderWithUser?.userEmail) {
+            await sendOrderConfirmationEmail(orderWithUser.userEmail, order.id)
+          }
         }
         break
       }
