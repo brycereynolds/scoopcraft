@@ -1,1 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 @import "tailwindcss";
+
+:root {
+  /* Primary palette */
+  --primary: #D4536A;
+  --primary-foreground: #FFF5F6;
+  --secondary: #C4883D;
+  --secondary-foreground: #FFF8F0;
+  --accent: #7DBBA2;
+  --accent-foreground: #1A3D30;
+
+  /* Backgrounds & surfaces */
+  --background: #FDF8F4;
+  --surface: #FFFFFF;
+  --surface-hover: #FEF6F0;
+  --muted: #F5EDE6;
+  --muted-foreground: #8C7B6B;
+
+  /* Text */
+  --foreground: #2D2420;
+  --foreground-secondary: #6B5D52;
+  --foreground-muted: #9C8E82;
+
+  /* Semantic */
+  --destructive: #C9413A;
+  --destructive-foreground: #FFF5F4;
+  --success: #6B9E7C;
+  --success-foreground: #F0F7F2;
+  --warning: #D4983B;
+  --warning-foreground: #3D2E10;
+  --info: #5B8DB8;
+  --info-foreground: #F0F5FA;
+
+  /* Borders & rings */
+  --border: #E8DDD4;
+  --border-strong: #D4C4B6;
+  --input: #E0D4C9;
+  --ring: #D4536A;
+
+  /* Loyalty tier colors */
+  --tier-sprinkle: #F2B5C0;
+  --tier-swirl: #B8A4D6;
+  --tier-sundae-supreme: #D4A843;
+
+  /* Legacy aliases for prompt compatibility */
+  --scoop-pink: #D4536A;
+  --soft-cream: #FDF8F4;
+  --sprinkle-purple: #B8A4D6;
+  --mint-green: #7DBBA2;
+  --chocolate-brown: #2D2420;
+  --vanilla-white: #FFF8F0;
+  --caramel-gold: #C4883D;
+  --text-primary: #2D2420;
+  --text-secondary: #6B5D52;
+
+  /* Border radius */
+  --radius: 12px;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'DM Sans', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+h1, h2, h3 {
+  font-family: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+}
+
+h4, h5, h6 {
+  font-family: 'DM Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
