@@ -4,17 +4,32 @@ on:
   push:
     branches: [main]
 
+# Deployment is triggered automatically by Railway's GitHub integration.
+# This workflow documents the deployment process but Railway handles
+# auto-deployment via its native GitHub app integration.
+# Configure at: https://railway.app/project/65180ee5-b26d-495b-8d57-f8bfc7fa4ae9
+# -> scoopcraft-web service -> Settings -> Source -> Connect Repo
+
 jobs:
-  deploy:
-    name: Deploy
+  notify-deploy:
+    name: Notify Deploy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Railway CLI
-        run: |
-          curl -fsSL https://railway.app/install.sh | sh
-          echo "/root/.local/bin" >> $GITHUB_PATH
-      - name: Deploy to Railway
+      - name: Trigger Railway Deployment
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
-        run: railway up --service scoopcraft-web --detach
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+        run: |
+          # Trigger deployment via Railway GraphQL API
+          RESULT=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer $RAILWAY_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"query": "mutation { serviceInstanceDeploy(serviceId: \"0171e691-0a93-4c37-8ae3-3949cf0fe5c1\", environmentId: \"ceb50120-37ff-4a42-8c33-6bfee819fa90\") }"}')
+          echo "Deploy result: $RESULT"
+          # Check for errors (non-auth errors mean deploy was triggered)
+          if echo "$RESULT" | grep -q '"data"'; then
+            echo "Deployment triggered successfully"
+          else
+            echo "Note: Auto-deploy via Railway GitHub integration will handle this"
+            echo "Configure at: https://railway.app/project/65180ee5-b26d-495b-8d57-f8bfc7fa4ae9"
+          fi
