@@ -13,7 +13,7 @@ export default auth((req) => {
       loginUrl.searchParams.set("callbackUrl", pathname)
       return NextResponse.redirect(loginUrl)
     }
-    if (session.user.role !== "admin") {
+    if (session?.user?.role !== "admin") {
       return NextResponse.redirect(new URL("/", req.url))
     }
   }

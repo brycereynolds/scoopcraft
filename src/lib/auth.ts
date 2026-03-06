@@ -35,6 +35,7 @@ async function recordLoginAttempt(email: string, success: boolean, ipAddress?: s
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     Credentials({
       name: "credentials",
