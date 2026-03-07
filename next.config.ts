@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Enable instrumentation hook (src/instrumentation.ts) for startup migrations
+  instrumentationHook: true,
   serverExternalPackages: ["@node-rs/argon2"],
   images: {
     remotePatterns: [
