@@ -1,0 +1,77 @@
+name: Fix DB - Migrate & Seed Railway
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason'
+        required: false
+        default: 'Fix Railway database connection and run migrations'
+
+jobs:
+  fix-db:
+    name: Fix DATABASE_URL, Migrate & Seed
+    runs-on: ubuntu-latest
+    env:
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      DATABASE_URL: "postgresql://postgres:pQxkJYYSHhXkGVsUmFqoXDKCMZVIAUUS@postgres-production-8e2a.up.railway.app:5432/railway?sslmode=require"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Update DATABASE_URL in Railway web service
+        run: |
+          echo "Updating DATABASE_URL in Railway production environment..."
+          DB_URL="postgresql://postgres:pQxkJYYSHhXkGVsUmFqoXDKCMZVIAUUS@postgres-production-8e2a.up.railway.app:5432/railway?sslmode=require"
+
+          RESULT=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer $RAILWAY_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\": \"mutation { variableUpsert(input: { projectId: \\\"65180ee5-b26d-495b-8d57-f8bfc7fa4ae9\\\", environmentId: \\\"ceb50120-37ff-4a42-8c33-6bfee819fa90\\\", serviceId: \\\"0171e691-0a93-4c37-8ae3-3949cf0fe5c1\\\", name: \\\"DATABASE_URL\\\", value: \\\"$DB_URL\\\" }) }\"}")
+
+          echo "Variable upsert result: $RESULT"
+
+      - name: Run Drizzle Migrations
+        run: |
+          echo "Running migrations against Railway Postgres..."
+          npx drizzle-kit migrate
+          echo "Migrations complete!"
+
+      - name: Seed Database
+        run: |
+          echo "Seeding database with initial data..."
+          npx tsx src/db/seed.ts
+          echo "Seed complete!"
+
+      - name: Trigger Railway Redeploy
+        run: |
+          echo "Triggering Railway redeploy..."
+          RESULT=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            -H "Authorization: Bearer $RAILWAY_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"query": "mutation { serviceInstanceDeploy(serviceId: \"0171e691-0a93-4c37-8ae3-3949cf0fe5c1\", environmentId: \"ceb50120-37ff-4a42-8c33-6bfee819fa90\") }"}')
+          echo "Redeploy result: $RESULT"
+
+      - name: Verify tables were created
+        run: |
+          echo "Verifying database tables..."
+          node -e "
+          const postgres = require('postgres');
+          const sql = postgres(process.env.DATABASE_URL);
+          sql\`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name\`
+            .then(rows => {
+              console.log('Tables in database:');
+              rows.forEach(r => console.log(' -', r.table_name));
+              console.log('Total tables:', rows.length);
+              return sql.end();
+            })
+            .catch(err => { console.error('Error:', err.message); process.exit(1); });
+          "
