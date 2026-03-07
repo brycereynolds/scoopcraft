@@ -6,7 +6,7 @@ export default function NotFound() {
       <body
         style={{
           margin: 0,
-          padding: 0,
+          padding: '2rem',
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
@@ -15,7 +15,6 @@ export default function NotFound() {
           backgroundColor: '#FDF8F4',
           fontFamily: "'DM Sans', sans-serif",
           textAlign: 'center',
-          padding: '2rem',
         }}
       >
         {/* Ice cream SVG decoration */}
