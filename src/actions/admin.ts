@@ -521,6 +521,110 @@ export async function getCustomers(search?: string): Promise<AdminCustomer[]> {
   return rows as AdminCustomer[];
 }
 
+// ─── Category Stats ───────────────────────────────────────────────────────────
+
+export type MenuCategoryName = 'flavor' | 'topping' | 'sauce' | 'vessel' | 'extra';
+
+export type CategoryStat = {
+  category: MenuCategoryName;
+  total: number;
+  available: number;
+  outOfStock: number;
+};
+
+export async function getCategoryStats(): Promise<CategoryStat[]> {
+  await requireAdmin();
+
+  const rows = await db
+    .select({
+      category: menuItems.category,
+      total: sql<number>`cast(count(*) as int)`,
+      available: sql<number>`cast(sum(case when ${menuItems.isAvailable} = true then 1 else 0 end) as int)`,
+      outOfStock: sql<number>`cast(sum(case when ${menuItems.stockTrackingEnabled} = true and ${menuItems.stockCount} = 0 then 1 else 0 end) as int)`,
+    })
+    .from(menuItems)
+    .groupBy(menuItems.category)
+    .orderBy(menuItems.category);
+
+  // Ensure all categories are represented
+  const ALL_CATS: MenuCategoryName[] = ['flavor', 'topping', 'sauce', 'vessel', 'extra'];
+  const map = new Map(rows.map((r) => [r.category, r]));
+  return ALL_CATS.map((cat) => map.get(cat) ?? { category: cat, total: 0, available: 0, outOfStock: 0 });
+}
+
+// ─── User Management ─────────────────────────────────────────────────────────
+
+export type AdminUser = {
+  id: number;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  phone: string | null;
+  role: string;
+  emailVerifiedAt: Date | null;
+  createdAt: Date;
+  orderCount: number;
+  totalSpent: string;
+};
+
+export async function getAllUsers(search?: string): Promise<AdminUser[]> {
+  await requireAdmin();
+
+  const conditions = [];
+
+  if (search && search.trim()) {
+    const term = `%${search.trim()}%`;
+    conditions.push(
+      or(
+        ilike(users.email, term),
+        ilike(users.firstName, term),
+        ilike(users.lastName, term)
+      )!
+    );
+  }
+
+  const rows = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      firstName: users.firstName,
+      lastName: users.lastName,
+      phone: users.phone,
+      role: users.role,
+      emailVerifiedAt: users.emailVerifiedAt,
+      createdAt: users.createdAt,
+      orderCount: sql<number>`cast(count(distinct ${orders.id}) as int)`,
+      totalSpent: sql<string>`coalesce(sum(${orders.total})::text, '0')`,
+    })
+    .from(users)
+    .leftJoin(orders, eq(orders.userId, users.id))
+    .where(conditions.length ? and(...conditions) : undefined)
+    .groupBy(
+      users.id,
+      users.email,
+      users.firstName,
+      users.lastName,
+      users.phone,
+      users.role,
+      users.emailVerifiedAt,
+      users.createdAt
+    )
+    .orderBy(desc(users.createdAt));
+
+  return rows as AdminUser[];
+}
+
+export async function updateUserRole(userId: number, role: 'customer' | 'admin'): Promise<void> {
+  await requireAdmin();
+
+  await db
+    .update(users)
+    .set({ role, updatedAt: new Date() })
+    .where(eq(users.id, userId));
+
+  revalidatePath('/admin/users');
+}
+
 // ─── getCustomerStats ─────────────────────────────────────────────────────────
 
 export type CustomerStats = {

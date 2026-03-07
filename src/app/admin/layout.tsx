@@ -9,6 +9,9 @@ import {
   IceCream,
   Users,
   Menu,
+  Tag,
+  UserCog,
+  Settings,
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +21,10 @@ const navItems = [
   { href: '/admin/orders/queue', label: 'Order Queue', icon: PackageOpen, badge: 'queue' },
   { href: '/admin/orders', label: 'All Orders', icon: ClipboardList },
   { href: '/admin/menu', label: 'Menu Items', icon: IceCream },
+  { href: '/admin/categories', label: 'Categories', icon: Tag },
   { href: '/admin/customers', label: 'Customers', icon: Users },
+  { href: '/admin/users', label: 'Users', icon: UserCog },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 function SidebarContent({ pendingCount }: { pendingCount: number }) {
