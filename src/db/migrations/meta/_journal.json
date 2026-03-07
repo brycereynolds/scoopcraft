@@ -15,6 +15,13 @@
       "when": 1772914660018,
       "tag": "0001_seed_admin_user",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773001060018,
+      "tag": "0002_seed_test_data",
+      "breakpoints": true
     }
   ]
 }
