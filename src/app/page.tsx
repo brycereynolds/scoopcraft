@@ -123,75 +123,79 @@ export default async function HomePage() {
         className="relative overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #FFF8F0 0%, #FEFAE0 50%, #FFF0F3 100%)' }}
       >
-        <div className="mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-20 md:py-28 lg:py-36">
-          <div className="max-w-2xl">
-            {/* Eyebrow */}
-            <span
-              className="inline-block rounded-full px-3 py-1 text-sm font-medium mb-6"
-              style={{
-                backgroundColor: 'var(--primary)',
-                color: 'var(--primary-foreground)',
-              }}
-            >
-              Artisan ice cream, delivered fresh
-            </span>
-
-            <h1
-              className="text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-6"
-              style={{
-                fontFamily: "'DM Serif Display', Georgia, serif",
-                color: 'var(--foreground)',
-              }}
-            >
-              Handcrafted Happiness, Delivered to Your Door
-            </h1>
-
-            <p
-              className="text-lg md:text-xl leading-relaxed mb-8 max-w-lg"
-              style={{ color: 'var(--foreground-secondary)' }}
-            >
-              Artisan ice cream made with love, delivered fresh to your doorstep.
-              Small batches, premium ingredients, unforgettable flavors.
-            </p>
-
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/menu"
-                className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-base font-semibold transition-all duration-150 hover:brightness-110"
+        <div className="mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row lg:items-center min-h-[600px] lg:min-h-[700px]">
+            {/* LEFT: Text content - takes left half on lg+ */}
+            <div className="flex-1 lg:max-w-[55%] py-20 md:py-28 lg:py-36 pr-0 lg:pr-12 z-10">
+              {/* Eyebrow */}
+              <span
+                className="inline-block rounded-full px-3 py-1 text-sm font-medium mb-6"
                 style={{
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)',
-                  boxShadow: '0 4px 12px rgba(212, 83, 106, 0.3)',
                 }}
               >
-                Browse the Menu
-              </Link>
-              <Link
-                href="/scoop-lab"
-                className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-base font-semibold transition-all duration-150 hover:bg-muted"
+                Artisan ice cream, delivered fresh
+              </span>
+
+              <h1
+                className="text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-6"
                 style={{
-                  backgroundColor: 'white',
+                  fontFamily: "'DM Serif Display', Georgia, serif",
                   color: 'var(--foreground)',
-                  border: '1px solid var(--border)',
                 }}
               >
-                Build Your Scoop
-              </Link>
+                Handcrafted Happiness, Delivered to Your Door
+              </h1>
+
+              <p
+                className="text-lg md:text-xl leading-relaxed mb-8 max-w-lg"
+                style={{ color: 'var(--foreground-secondary)' }}
+              >
+                Artisan ice cream made with love, delivered fresh to your doorstep.
+                Small batches, premium ingredients, unforgettable flavors.
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/menu"
+                  className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-base font-semibold transition-all duration-150 hover:brightness-110"
+                  style={{
+                    backgroundColor: 'var(--primary)',
+                    color: 'var(--primary-foreground)',
+                    boxShadow: '0 4px 12px rgba(212, 83, 106, 0.3)',
+                  }}
+                >
+                  Browse the Menu
+                </Link>
+                <Link
+                  href="/scoop-lab"
+                  className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-base font-semibold transition-all duration-150 hover:bg-muted"
+                  style={{
+                    backgroundColor: 'white',
+                    color: 'var(--foreground)',
+                    border: '1px solid var(--border)',
+                  }}
+                >
+                  Build Your Scoop
+                </Link>
+              </div>
+            </div>
+
+            {/* RIGHT: Hero image - takes right half on lg+, hidden on mobile */}
+            <div className="hidden lg:block lg:w-[45%] lg:absolute lg:inset-y-0 lg:right-0 overflow-hidden">
+              <Image
+                src={pexelsUrl(IMAGES.hero.main, "hero")}
+                alt={IMAGES.hero.main.alt}
+                fill
+                className="object-cover object-center"
+                priority
+                sizes="45vw"
+              />
+              {/* Gradient fade from left */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#FFF8F0] via-[rgba(255,248,240,0.3)] to-transparent pointer-events-none" />
             </div>
           </div>
-        </div>
-
-        {/* Hero image */}
-        <div className="absolute inset-y-0 right-0 w-1/2 hidden lg:block overflow-hidden">
-          <Image
-            src={pexelsUrl(IMAGES.hero.main, "hero")}
-            alt={IMAGES.hero.main.alt}
-            fill
-            className="object-cover"
-            priority
-            sizes="50vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#FFF8F0] via-transparent to-transparent" />
         </div>
       </section>
 
