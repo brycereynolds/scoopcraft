@@ -5,11 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { Check, ChevronLeft, ChevronRight, ShoppingCart, RotateCcw, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createScoopLabConfig, addScoopLabToCart } from '@/actions/scoop-lab';
 import { ScoopPreview } from './scoop-preview';
+import { IMAGES, pexelsUrl } from '@/lib/imagery';
 import type { ScoopLabMenuItem } from '@/types';
 
 type ScoopLabBuilderProps = {
@@ -79,9 +81,24 @@ function ItemCard({ item, selected, onClick, disabled = false, badge }: ItemCard
           {badge}
         </span>
       )}
-      <span className="text-2xl" aria-hidden="true">
-        {getItemEmoji(item)}
-      </span>
+      {(() => {
+        const pexelsImageUrl = item.photoUrl || getItemPexelsUrl(item);
+        return pexelsImageUrl ? (
+          <div className="relative h-16 w-16 rounded-xl overflow-hidden flex-shrink-0">
+            <Image
+              src={pexelsImageUrl}
+              alt={item.name}
+              fill
+              className="object-cover"
+              sizes="64px"
+            />
+          </div>
+        ) : (
+          <span className="text-2xl" aria-hidden="true">
+            {getItemEmoji(item)}
+          </span>
+        );
+      })()}
       <div className="w-full text-center">
         <p className="text-sm font-medium leading-tight" style={{ color: '#2D2420' }}>
           {item.name}
@@ -100,6 +117,34 @@ function ItemCard({ item, selected, onClick, disabled = false, badge }: ItemCard
       </div>
     </button>
   );
+}
+
+function getItemPexelsUrl(item: ScoopLabMenuItem): string | null {
+  const lower = item.name.toLowerCase();
+  if (lower.includes('vanilla')) return pexelsUrl(IMAGES.flavors.vanilla, 'card');
+  if (lower.includes('dark chocolate') || lower.includes('chocolate obsession')) return pexelsUrl(IMAGES.flavors.chocolate, 'card');
+  if (lower.includes('chocolate')) return pexelsUrl(IMAGES.flavors.chocolate, 'card');
+  if (lower.includes('strawberry')) return pexelsUrl(IMAGES.flavors.strawberry, 'card');
+  if (lower.includes('mint')) return pexelsUrl(IMAGES.flavors.mint_chip, 'card');
+  if (lower.includes('caramel')) return pexelsUrl(IMAGES.flavors.caramel, 'card');
+  if (lower.includes('cookies') || lower.includes('cream')) return pexelsUrl(IMAGES.flavors.cookies_cream, 'card');
+  if (lower.includes('lemon') || lower.includes('sorbet')) return pexelsUrl(IMAGES.flavors.lemon_sorbet, 'card');
+  if (lower.includes('blueberry')) return pexelsUrl(IMAGES.flavors.blueberry, 'card');
+  if (lower.includes('matcha') || lower.includes('green tea')) return pexelsUrl(IMAGES.flavors.matcha, 'card');
+  if (lower.includes('raspberry')) return pexelsUrl(IMAGES.flavors.raspberry, 'card');
+  if (lower.includes('espresso') || lower.includes('coffee')) return pexelsUrl(IMAGES.flavors.espresso, 'card');
+  if (lower.includes('mango')) return pexelsUrl(IMAGES.flavors.mango, 'card');
+  if (lower.includes('pistachio')) return pexelsUrl(IMAGES.flavors.pistachio, 'card');
+  if (lower.includes('peach')) return pexelsUrl(IMAGES.flavors.peach, 'card');
+  if (lower.includes('sprinkle') || lower.includes('rainbow')) return pexelsUrl(IMAGES.toppings.sprinkles, 'thumb');
+  if (lower.includes('fudge')) return pexelsUrl(IMAGES.toppings.hot_fudge, 'thumb');
+  if (lower.includes('berry') || lower.includes('berries')) return pexelsUrl(IMAGES.toppings.berries, 'thumb');
+  if (lower.includes('caramel drizzle')) return pexelsUrl(IMAGES.toppings.caramel_drizzle, 'thumb');
+  if (lower.includes('whipped')) return pexelsUrl(IMAGES.toppings.whipped_cream, 'thumb');
+  if (lower.includes('waffle cone')) return pexelsUrl(IMAGES.vessels.waffle_cone, 'thumb');
+  if (lower.includes('cup') || lower.includes('bowl')) return pexelsUrl(IMAGES.vessels.paper_cup, 'thumb');
+  if (lower.includes('sugar cone') || lower.includes('cone')) return pexelsUrl(IMAGES.vessels.sugar_cone, 'thumb');
+  return null;
 }
 
 function getItemEmoji(item: ScoopLabMenuItem): string {

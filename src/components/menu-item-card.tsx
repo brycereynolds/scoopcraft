@@ -6,6 +6,7 @@ import { ShoppingCart, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { addToCart } from '@/actions/cart';
 import type { MenuItemWithPhoto } from '@/types';
+import { IMAGES, pexelsUrl } from '@/lib/imagery';
 
 interface MenuItemCardProps {
   item: MenuItemWithPhoto;
@@ -32,6 +33,24 @@ const EMOJI_BY_CATEGORY: Record<string, string> = {
   sauce: '🍯',
   vessel: '🍧',
   extra: '✨',
+};
+
+const PEXELS_FALLBACK: Record<string, string> = {
+  'Vanilla Bean Dream': pexelsUrl(IMAGES.flavors.vanilla, 'card'),
+  'Dark Chocolate Obsession': pexelsUrl(IMAGES.flavors.chocolate, 'card'),
+  'Strawberry Fields': pexelsUrl(IMAGES.flavors.strawberry, 'card'),
+  'Salted Caramel Swirl': pexelsUrl(IMAGES.flavors.caramel, 'card'),
+  'Sprinkle Rainbow': pexelsUrl(IMAGES.toppings.sprinkles, 'card'),
+  'Hot Fudge': pexelsUrl(IMAGES.toppings.hot_fudge, 'card'),
+  'Waffle Cone': pexelsUrl(IMAGES.vessels.waffle_cone, 'card'),
+};
+
+const CATEGORY_PEXELS_FALLBACK: Record<string, string> = {
+  flavor: pexelsUrl(IMAGES.flavors.vanilla, 'card'),
+  topping: pexelsUrl(IMAGES.toppings.sprinkles, 'card'),
+  sauce: pexelsUrl(IMAGES.toppings.hot_fudge, 'card'),
+  vessel: pexelsUrl(IMAGES.vessels.waffle_cone, 'card'),
+  extra: pexelsUrl(IMAGES.flavors.vanilla, 'card'),
 };
 
 export function MenuItemCard({ item }: MenuItemCardProps) {
@@ -76,9 +95,9 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
     >
       {/* Image / Emoji placeholder */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-        {item.photoUrl ? (
+        {(item.photoUrl || PEXELS_FALLBACK[item.name] || CATEGORY_PEXELS_FALLBACK[item.category]) ? (
           <Image
-            src={item.photoUrl}
+            src={item.photoUrl || PEXELS_FALLBACK[item.name] || CATEGORY_PEXELS_FALLBACK[item.category]}
             alt={item.name}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
