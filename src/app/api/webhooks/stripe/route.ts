@@ -40,6 +40,68 @@ export async function POST(req: NextRequest) {
 
   try {
     switch (event.type) {
+      case "checkout.session.completed": {
+        // Handle Stripe Checkout Session completion for subscriptions
+        const checkoutSession = event.data.object as Stripe.Checkout.Session
+        if (checkoutSession.mode !== "subscription") break
+
+        const stripeSubscriptionId =
+          typeof checkoutSession.subscription === "string"
+            ? checkoutSession.subscription
+            : (checkoutSession.subscription as Stripe.Subscription | null)?.id
+
+        if (!stripeSubscriptionId) {
+          console.error("checkout.session.completed: no subscription ID in session")
+          break
+        }
+
+        const userIdStr = checkoutSession.metadata?.scoopcraft_user_id
+        const planIdStr = checkoutSession.metadata?.scoopcraft_plan_id
+
+        if (!userIdStr || !planIdStr) {
+          console.error("checkout.session.completed: missing metadata", checkoutSession.metadata)
+          break
+        }
+
+        // Check if a subscription record already exists (idempotency)
+        const [existingSub] = await db
+          .select({ id: subscriptions.id })
+          .from(subscriptions)
+          .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId))
+
+        if (existingSub) {
+          const stripeSub = await stripe.subscriptions.retrieve(stripeSubscriptionId)
+          await syncSubscriptionToDb(stripeSub)
+          console.log(`checkout.session.completed: synced existing subscription ${stripeSubscriptionId}`)
+          break
+        }
+
+        // Retrieve the full subscription from Stripe to get period dates
+        const stripeSub = await stripe.subscriptions.retrieve(stripeSubscriptionId)
+
+        await db.insert(subscriptions).values({
+          userId: parseInt(userIdStr, 10),
+          planId: parseInt(planIdStr, 10),
+          stripeSubscriptionId,
+          status:
+            stripeSub.status === "active" || stripeSub.status === "trialing"
+              ? "active"
+              : "past_due",
+          currentPeriodStart: stripeSub.current_period_start
+            ? new Date(stripeSub.current_period_start * 1000)
+            : null,
+          currentPeriodEnd: stripeSub.current_period_end
+            ? new Date(stripeSub.current_period_end * 1000)
+            : null,
+          cancelAtPeriodEnd: stripeSub.cancel_at_period_end,
+        })
+
+        console.log(
+          `checkout.session.completed: created subscription for user ${userIdStr}, plan ${planIdStr}`
+        )
+        break
+      }
+
       case "payment_intent.succeeded": {
         const pi = event.data.object as Stripe.PaymentIntent
         const [order] = await db

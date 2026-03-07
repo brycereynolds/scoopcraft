@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  createSubscription,
+  createCheckoutSession,
   cancelSubscription,
   pauseSubscription,
   resumeSubscription,
@@ -53,24 +53,32 @@ function getPlanFeatures(name: string): string[] {
 interface PlanCardProps {
   plan: SubscriptionPlan;
   featured?: boolean;
+  /** If true, automatically redirect to Stripe checkout on mount */
+  autoCheckout?: boolean;
 }
 
-function PlanCard({ plan, featured }: PlanCardProps) {
+function PlanCard({ plan, featured, autoCheckout }: PlanCardProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const features = getPlanFeatures(plan.name);
+
+  // Auto-initiate checkout if this plan was pre-selected via URL param
+  useEffect(() => {
+    if (autoCheckout) {
+      handleSubscribe();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoCheckout]);
 
   function handleSubscribe() {
     setError(null);
     startTransition(async () => {
       try {
-        const result = await createSubscription(plan.id.toString());
-        // In production, use Stripe.js to confirm payment with result.clientSecret
-        // For now, show a success message
-        console.log("Subscription created:", result.subscriptionId);
-        window.location.reload();
+        const result = await createCheckoutSession(plan.id.toString());
+        // Redirect to Stripe's hosted checkout page for secure payment collection
+        window.location.href = result.url;
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to create subscription");
+        setError(err instanceof Error ? err.message : "Failed to start checkout. Please try again.");
       }
     });
   }
@@ -162,11 +170,20 @@ function PlanCard({ plan, featured }: PlanCardProps) {
 
 interface NoSubscriptionViewProps {
   plans: SubscriptionPlan[];
+  preselectedPlanName?: string | null;
 }
 
-export function NoSubscriptionView({ plans }: NoSubscriptionViewProps) {
+export function NoSubscriptionView({ plans, preselectedPlanName }: NoSubscriptionViewProps) {
   const sorted = [...plans].sort((a, b) => a.sortOrder - b.sortOrder);
   const featured = sorted[sorted.length - 1];
+
+  // Find a preselected plan if one was specified via URL param
+  const preselected = preselectedPlanName
+    ? sorted.find((p) =>
+        p.name.toLowerCase().includes(preselectedPlanName.toLowerCase()) ||
+        preselectedPlanName.toLowerCase().includes(p.name.toLowerCase().split(" ")[0])
+      )
+    : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -181,7 +198,12 @@ export function NoSubscriptionView({ plans }: NoSubscriptionViewProps) {
 
       <div className="grid gap-6 sm:grid-cols-2">
         {sorted.map((plan) => (
-          <PlanCard key={plan.id} plan={plan} featured={plan.id === featured?.id} />
+          <PlanCard
+            key={plan.id}
+            plan={plan}
+            featured={preselected ? plan.id === preselected.id : plan.id === featured?.id}
+            autoCheckout={preselected?.id === plan.id}
+          />
         ))}
       </div>
     </div>

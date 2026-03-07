@@ -66,16 +66,30 @@ function getPlanFeatures(name: string): string[] {
   return ["Monthly curated ice cream delivery", "Free shipping", "Loyalty rewards"];
 }
 
-export default async function SubscriptionPage() {
+export default async function SubscriptionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string; name?: string }>;
+}) {
   const session = await auth();
+  const params = await searchParams;
+
   if (!session?.user?.id) {
-    redirect("/login");
+    // Preserve the plan query param so we return here after login
+    const returnUrl = params.plan
+      ? `/account/subscription?plan=${params.plan}${params.name ? `&name=${params.name}` : ""}`
+      : "/account/subscription";
+    redirect(`/login?callbackUrl=${encodeURIComponent(returnUrl)}`);
   }
 
   const [subscription, plans] = await Promise.all([
     getUserSubscription(session.user.id),
     getSubscriptionPlans(),
   ]);
+
+  // Resolve pre-selected plan from URL params
+  // Matches by name (case-insensitive) for marketing page links like ?name=Deluxe+Box
+  const preselectedPlanName = params.name ?? null;
 
   return (
     <div className="flex flex-col gap-8">
@@ -92,7 +106,7 @@ export default async function SubscriptionPage() {
       </div>
 
       {!subscription ? (
-        <NoSubscriptionView plans={plans} />
+        <NoSubscriptionView plans={plans} preselectedPlanName={preselectedPlanName} />
       ) : (
         <div className="flex flex-col gap-6">
           {/* Current plan card */}

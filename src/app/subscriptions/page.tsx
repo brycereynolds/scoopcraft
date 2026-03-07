@@ -165,7 +165,7 @@ export default function SubscriptionsPage() {
                 </ul>
 
                 <div className="mt-auto">
-                  <Link href="/account/subscription">
+                  <Link href={`/account/subscription?plan=${plan.id}&name=${encodeURIComponent(plan.name)}`}>
                     <Button
                       className="w-full text-base py-6"
                       style={
