@@ -5,6 +5,15 @@
  * Requires DATABASE_URL environment variable
  */
 
+// Photo URLs from Pexels (used as default photos for seed items)
+// Photo IDs match the imagery catalog
+const PEXELS_BASE = "https://images.pexels.com/photos";
+const CARD_PARAMS = "?auto=compress&cs=tinysrgb&fit=crop&h=400&w=400";
+
+function pexelsPhotoUrl(id: number): string {
+  return `${PEXELS_BASE}/${id}/pexels-photo-${id}.jpeg${CARD_PARAMS}`;
+}
+
 import { db } from "./index"
 import {
   users,
@@ -44,6 +53,7 @@ async function seed() {
       dietaryFlags: ["gluten-free"],
       calories: 250,
       sortOrder: 1,
+      photoUrl: pexelsPhotoUrl(29851690),
     },
     {
       name: "Dark Chocolate Obsession",
@@ -55,6 +65,7 @@ async function seed() {
       dietaryFlags: ["gluten-free"],
       calories: 290,
       sortOrder: 2,
+      photoUrl: pexelsPhotoUrl(2846337),
     },
     {
       name: "Strawberry Fields",
@@ -66,6 +77,7 @@ async function seed() {
       dietaryFlags: ["gluten-free"],
       calories: 230,
       sortOrder: 3,
+      photoUrl: pexelsPhotoUrl(5535557),
     },
     {
       name: "Salted Caramel Swirl",
@@ -77,6 +89,7 @@ async function seed() {
       dietaryFlags: ["gluten-free"],
       calories: 310,
       sortOrder: 4,
+      photoUrl: pexelsPhotoUrl(5060454),
     },
     {
       name: "Sprinkle Rainbow",
@@ -88,6 +101,7 @@ async function seed() {
       dietaryFlags: ["vegan", "gluten-free"],
       calories: 20,
       sortOrder: 1,
+      photoUrl: pexelsPhotoUrl(1352251),
     },
     {
       name: "Hot Fudge",
@@ -99,6 +113,7 @@ async function seed() {
       dietaryFlags: ["gluten-free"],
       calories: 110,
       sortOrder: 1,
+      photoUrl: pexelsPhotoUrl(5060454),
     },
     {
       name: "Waffle Cone",
@@ -110,6 +125,7 @@ async function seed() {
       dietaryFlags: [] as string[],
       calories: 160,
       sortOrder: 1,
+      photoUrl: pexelsPhotoUrl(9227981),
     },
   ]
 

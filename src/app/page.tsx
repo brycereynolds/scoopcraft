@@ -1,9 +1,11 @@
 export const dynamic = 'force-dynamic';
 import Link from 'next/link';
+import Image from 'next/image';
 import { db } from '@/db';
 import { menuItems } from '@/db/schema';
 import { or, eq, and } from 'drizzle-orm';
 import { MenuItemCard } from '@/components/menu-item-card';
+import { IMAGES, pexelsUrl } from '@/lib/imagery';
 import type { MenuItemWithPhoto } from '@/types';
 
 // ── Data fetching ────────────────────────────────────────────────────────────
@@ -62,17 +64,20 @@ async function getFeaturedItems(): Promise<MenuItemWithPhoto[]> {
 
 // ── Placeholder card for empty state ────────────────────────────────────────
 
-function PlaceholderCard({ emoji, name, price }: { emoji: string; name: string; price: string }) {
+function PlaceholderCard({ photoUrl, avgColor, name, price }: { photoUrl: string; avgColor: string; name: string; price: string }) {
   return (
     <div
       className="flex flex-col rounded-xl overflow-hidden bg-white"
       style={{ boxShadow: '0 2px 8px -2px rgba(45, 36, 32, 0.06), 0 1px 3px -1px rgba(45, 36, 32, 0.04)' }}
     >
-      <div
-        className="flex items-center justify-center aspect-[4/3]"
-        style={{ background: 'linear-gradient(135deg, #FDF8F4, #FFF0F3)' }}
-      >
-        <span className="text-5xl select-none">{emoji}</span>
+      <div className="relative aspect-[4/3] overflow-hidden" style={{ backgroundColor: avgColor }}>
+        <Image
+          src={photoUrl}
+          alt={name}
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
       </div>
       <div className="p-5">
         <h3
@@ -98,12 +103,12 @@ function PlaceholderCard({ emoji, name, price }: { emoji: string; name: string; 
 }
 
 const PLACEHOLDER_ITEMS = [
-  { emoji: '🍓', name: 'Strawberry Fields', price: '$6.50' },
-  { emoji: '🍫', name: 'Dark Chocolate Dream', price: '$6.50' },
-  { emoji: '🍵', name: 'Matcha Mochi Swirl', price: '$7.00' },
-  { emoji: '🫐', name: 'Blueberry Lavender', price: '$6.75' },
-  { emoji: '🥜', name: 'Peanut Butter Crunch', price: '$6.50' },
-  { emoji: '🍋', name: 'Lemon Verbena Sorbet', price: '$5.75' },
+  { photoUrl: pexelsUrl(IMAGES.flavors.strawberry, 'card'), avgColor: IMAGES.flavors.strawberry.avgColor, name: 'Strawberry Fields', price: '$6.50' },
+  { photoUrl: pexelsUrl(IMAGES.flavors.chocolate, 'card'), avgColor: IMAGES.flavors.chocolate.avgColor, name: 'Dark Chocolate Dream', price: '$6.50' },
+  { photoUrl: pexelsUrl(IMAGES.flavors.matcha, 'card'), avgColor: IMAGES.flavors.matcha.avgColor, name: 'Matcha Mochi Swirl', price: '$7.00' },
+  { photoUrl: pexelsUrl(IMAGES.flavors.blueberry, 'card'), avgColor: IMAGES.flavors.blueberry.avgColor, name: 'Blueberry Lavender', price: '$6.75' },
+  { photoUrl: pexelsUrl(IMAGES.flavors.pistachio, 'card'), avgColor: IMAGES.flavors.pistachio.avgColor, name: 'Peanut Butter Crunch', price: '$6.50' },
+  { photoUrl: pexelsUrl(IMAGES.flavors.lemon_sorbet, 'card'), avgColor: IMAGES.flavors.lemon_sorbet.avgColor, name: 'Lemon Verbena Sorbet', price: '$5.75' },
 ];
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -176,30 +181,17 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Decorative emojis */}
-        <div
-          className="absolute top-12 right-8 text-6xl select-none hidden lg:block"
-          style={{ transform: 'rotate(12deg)', opacity: 0.7 }}
-        >
-          🍦
-        </div>
-        <div
-          className="absolute top-32 right-36 text-4xl select-none hidden lg:block"
-          style={{ transform: 'rotate(-8deg)', opacity: 0.5 }}
-        >
-          🍧
-        </div>
-        <div
-          className="absolute bottom-16 right-16 text-5xl select-none hidden lg:block"
-          style={{ transform: 'rotate(5deg)', opacity: 0.6 }}
-        >
-          🍡
-        </div>
-        <div
-          className="absolute top-1/2 right-64 text-3xl select-none hidden xl:block"
-          style={{ transform: 'translateY(-50%) rotate(-15deg)', opacity: 0.4 }}
-        >
-          🌟
+        {/* Hero image */}
+        <div className="absolute inset-y-0 right-0 w-1/2 hidden lg:block overflow-hidden">
+          <Image
+            src={pexelsUrl(IMAGES.hero.main, "hero")}
+            alt={IMAGES.hero.main.alt}
+            fill
+            className="object-cover"
+            priority
+            sizes="50vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#FFF8F0] via-transparent to-transparent" />
         </div>
       </section>
 
@@ -337,7 +329,9 @@ export default async function HomePage() {
               boxShadow: '0 2px 8px -2px rgba(45, 36, 32, 0.06)',
             }}
           >
-            <div className="text-3xl mb-3 select-none">🍦</div>
+            <div className="relative h-12 w-12 mb-3 rounded-xl overflow-hidden">
+              <Image src={pexelsUrl(IMAGES.flavors.vanilla, 'icon')} alt="Classic subscription" fill className="object-cover" sizes="48px" />
+            </div>
             <h3
               className="text-2xl mb-1"
               style={{
@@ -380,7 +374,9 @@ export default async function HomePage() {
             <span className="absolute top-4 right-4 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-white/20 text-white">
               Most Popular
             </span>
-            <div className="text-3xl mb-3 select-none">🌟</div>
+            <div className="relative h-12 w-12 mb-3 rounded-xl overflow-hidden">
+              <Image src={pexelsUrl(IMAGES.flavors.caramel, 'icon')} alt="Deluxe subscription" fill className="object-cover" sizes="48px" />
+            </div>
             <h3
               className="text-2xl mb-1 text-white"
               style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
@@ -419,7 +415,9 @@ export default async function HomePage() {
       >
         <div className="mx-auto max-w-7xl px-8 md:px-12 lg:px-16 py-16 md:py-20">
           <div className="max-w-2xl">
-            <div className="text-5xl mb-6 select-none">🧪</div>
+            <div className="relative h-20 w-20 mb-6 rounded-2xl overflow-hidden">
+              <Image src={pexelsUrl(IMAGES.flavors.matcha, 'thumb')} alt="The Scoop Lab" fill className="object-cover" sizes="80px" />
+            </div>
             <h2
               className="text-3xl md:text-4xl lg:text-5xl text-white mb-4"
               style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
