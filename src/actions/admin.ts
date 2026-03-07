@@ -10,8 +10,9 @@ import {
   orderStatusLog,
   subscriptions,
   deliverySlots,
+  loyaltyAccounts,
 } from '@/db/schema';
-import { eq, desc, count, sum, and, gte, inArray } from 'drizzle-orm';
+import { eq, desc, count, sum, and, gte, inArray, ilike, or, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import type { OrderStatus } from '@/types';
 
@@ -318,4 +319,243 @@ export async function adminUpdateOrderStatus(
   revalidatePath('/admin/orders/queue');
   revalidatePath('/admin/orders');
   revalidatePath('/admin');
+}
+
+// ─── Menu Item Types ──────────────────────────────────────────────────────────
+
+export type MenuItemCategory = 'flavor' | 'topping' | 'sauce' | 'vessel' | 'extra';
+
+export type AdminMenuItem = {
+  id: number;
+  name: string;
+  description: string | null;
+  price: string;
+  category: MenuItemCategory;
+  isAvailable: boolean;
+  stockCount: number | null;
+  stockTrackingEnabled: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+// ─── getMenuItems ─────────────────────────────────────────────────────────────
+
+export async function getMenuItems(category?: string): Promise<AdminMenuItem[]> {
+  await requireAdmin();
+
+  const rows = await db
+    .select({
+      id: menuItems.id,
+      name: menuItems.name,
+      description: menuItems.description,
+      price: menuItems.price,
+      category: menuItems.category,
+      isAvailable: menuItems.isAvailable,
+      stockCount: menuItems.stockCount,
+      stockTrackingEnabled: menuItems.stockTrackingEnabled,
+      sortOrder: menuItems.sortOrder,
+      createdAt: menuItems.createdAt,
+      updatedAt: menuItems.updatedAt,
+    })
+    .from(menuItems)
+    .where(
+      category && category !== 'all'
+        ? eq(menuItems.category, category as MenuItemCategory)
+        : undefined
+    )
+    .orderBy(menuItems.sortOrder, menuItems.name);
+
+  return rows as AdminMenuItem[];
+}
+
+// ─── createMenuItem ───────────────────────────────────────────────────────────
+
+export async function createMenuItem(data: {
+  name: string;
+  description?: string;
+  price: string;
+  category: MenuItemCategory;
+  stockCount?: number | null;
+  stockTrackingEnabled?: boolean;
+  sortOrder?: number;
+}): Promise<void> {
+  await requireAdmin();
+
+  await db.insert(menuItems).values({
+    name: data.name,
+    description: data.description ?? null,
+    price: data.price,
+    category: data.category,
+    stockCount: data.stockCount ?? null,
+    stockTrackingEnabled: data.stockTrackingEnabled ?? false,
+    sortOrder: data.sortOrder ?? 0,
+    isAvailable: true,
+  });
+
+  revalidatePath('/admin/menu');
+}
+
+// ─── updateMenuItem ───────────────────────────────────────────────────────────
+
+export async function updateMenuItem(
+  id: number,
+  data: {
+    name?: string;
+    description?: string | null;
+    price?: string;
+    category?: MenuItemCategory;
+    stockCount?: number | null;
+    stockTrackingEnabled?: boolean;
+    sortOrder?: number;
+  }
+): Promise<void> {
+  await requireAdmin();
+
+  await db
+    .update(menuItems)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(menuItems.id, id));
+
+  revalidatePath('/admin/menu');
+}
+
+// ─── deleteMenuItem ───────────────────────────────────────────────────────────
+
+export async function deleteMenuItem(id: number): Promise<void> {
+  await requireAdmin();
+
+  await db.delete(menuItems).where(eq(menuItems.id, id));
+
+  revalidatePath('/admin/menu');
+}
+
+// ─── toggleMenuItemAvailability ───────────────────────────────────────────────
+
+export async function toggleMenuItemAvailability(id: number): Promise<void> {
+  await requireAdmin();
+
+  const [item] = await db
+    .select({ isAvailable: menuItems.isAvailable })
+    .from(menuItems)
+    .where(eq(menuItems.id, id));
+
+  if (!item) throw new Error('Menu item not found');
+
+  await db
+    .update(menuItems)
+    .set({ isAvailable: !item.isAvailable, updatedAt: new Date() })
+    .where(eq(menuItems.id, id));
+
+  revalidatePath('/admin/menu');
+}
+
+// ─── Customer Types ───────────────────────────────────────────────────────────
+
+export type AdminCustomer = {
+  id: number;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  phone: string | null;
+  role: string;
+  emailVerifiedAt: Date | null;
+  createdAt: Date;
+  orderCount: number;
+  totalSpent: string;
+  loyaltyTier: string | null;
+  loyaltyPoints: number | null;
+};
+
+// ─── getCustomers ─────────────────────────────────────────────────────────────
+
+export async function getCustomers(search?: string): Promise<AdminCustomer[]> {
+  await requireAdmin();
+
+  const conditions = [eq(users.role, 'customer')];
+
+  if (search && search.trim()) {
+    const term = `%${search.trim()}%`;
+    conditions.push(
+      or(
+        ilike(users.email, term),
+        ilike(users.firstName, term),
+        ilike(users.lastName, term)
+      )!
+    );
+  }
+
+  const rows = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      firstName: users.firstName,
+      lastName: users.lastName,
+      phone: users.phone,
+      role: users.role,
+      emailVerifiedAt: users.emailVerifiedAt,
+      createdAt: users.createdAt,
+      orderCount: sql<number>`cast(count(distinct ${orders.id}) as int)`,
+      totalSpent: sql<string>`coalesce(sum(${orders.total})::text, '0')`,
+      loyaltyTier: loyaltyAccounts.tier,
+      loyaltyPoints: loyaltyAccounts.pointsBalance,
+    })
+    .from(users)
+    .leftJoin(orders, eq(orders.userId, users.id))
+    .leftJoin(loyaltyAccounts, eq(loyaltyAccounts.userId, users.id))
+    .where(and(...conditions))
+    .groupBy(
+      users.id,
+      users.email,
+      users.firstName,
+      users.lastName,
+      users.phone,
+      users.role,
+      users.emailVerifiedAt,
+      users.createdAt,
+      loyaltyAccounts.tier,
+      loyaltyAccounts.pointsBalance
+    )
+    .orderBy(desc(users.createdAt));
+
+  return rows as AdminCustomer[];
+}
+
+// ─── getCustomerStats ─────────────────────────────────────────────────────────
+
+export type CustomerStats = {
+  totalOrders: number;
+  totalSpent: number;
+  lastOrderAt: Date | null;
+  loyaltyTier: string | null;
+  loyaltyPoints: number | null;
+};
+
+export async function getCustomerStats(userId: number): Promise<CustomerStats> {
+  await requireAdmin();
+
+  const [orderStats] = await db
+    .select({
+      totalOrders: count(orders.id),
+      totalSpent: sum(orders.total),
+      lastOrderAt: sql<Date>`max(${orders.createdAt})`,
+    })
+    .from(orders)
+    .where(eq(orders.userId, userId));
+
+  const [loyalty] = await db
+    .select({
+      tier: loyaltyAccounts.tier,
+      points: loyaltyAccounts.pointsBalance,
+    })
+    .from(loyaltyAccounts)
+    .where(eq(loyaltyAccounts.userId, userId));
+
+  return {
+    totalOrders: orderStats?.totalOrders ?? 0,
+    totalSpent: parseFloat(orderStats?.totalSpent ?? '0'),
+    lastOrderAt: orderStats?.lastOrderAt ?? null,
+    loyaltyTier: loyalty?.tier ?? null,
+    loyaltyPoints: loyalty?.points ?? null,
+  };
 }
