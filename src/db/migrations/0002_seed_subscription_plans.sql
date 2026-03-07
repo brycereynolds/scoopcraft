@@ -25,7 +25,7 @@ VALUES
   (
     'Classic Box',
     'Two handcrafted pints delivered monthly — our most popular flavors curated fresh.',
-    '25.00',
+    25.00,
     'price_classic_monthly_placeholder',
     'prod_classic_box_placeholder',
     1,
@@ -35,7 +35,7 @@ VALUES
   (
     'Deluxe Box',
     'Four premium pints plus exclusive seasonal creations and a surprise treat.',
-    '45.00',
+    45.00,
     'price_deluxe_monthly_placeholder',
     'prod_deluxe_box_placeholder',
     2,
