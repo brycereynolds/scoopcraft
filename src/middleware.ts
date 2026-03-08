@@ -1,6 +1,11 @@
-import { auth } from "@/lib/auth"
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+// Use the edge-compatible auth config (no Node.js native packages) so that
+// middleware can run on the Next.js Edge Runtime without bundling argon2.
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl

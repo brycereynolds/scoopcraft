@@ -39,3 +39,31 @@ export interface CheckoutTotals {
   tax: number
   total: number
 }
+
+// Menu item with an optional Cloudflare R2 photo URL
+export interface MenuItemWithPhoto {
+  id: number
+  name: string
+  description: string | null
+  price: string
+  category: string
+  availabilityType: string
+  isAvailable: boolean
+  isVegan: boolean
+  isDairyFree: boolean
+  isGlutenFree: boolean
+  calories: number | null
+  photoUrl: string | null
+}
+
+// Menu item used in the Scoop Lab builder
+export interface ScoopLabMenuItem {
+  id: number
+  name: string
+  description: string | null
+  price: string
+  category: string
+  availabilityType: string
+  isAvailable: boolean
+  photoUrl: string | null
+}

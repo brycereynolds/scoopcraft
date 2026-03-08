@@ -1,13 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { verifyEmailAction } from "@/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 
-export default function VerifyEmailPage() {
+// Inner component that reads search params — must be wrapped in <Suspense>.
+function VerifyEmailContent() {
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
 
@@ -132,5 +133,19 @@ export default function VerifyEmailPage() {
         )}
       </CardContent>
     </Card>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <Card>
+        <CardContent className="py-8 text-center text-gray-500">
+          Loading…
+        </CardContent>
+      </Card>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   )
 }

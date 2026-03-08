@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { createScoopLabConfig, addScoopLabToCart } from '@/actions/scoop-lab';
 import { IMAGES, pexelsUrl } from '@/lib/imagery';
 import { ScoopPreview } from './scoop-preview';
-import { IMAGES, pexelsUrl } from '@/lib/imagery';
 import type { ScoopLabMenuItem } from '@/types';
 
 type ScoopLabBuilderProps = {

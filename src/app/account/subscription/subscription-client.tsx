@@ -274,7 +274,7 @@ function PlanCard({ plan, featured }: PlanCardProps) {
               ? { backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }
               : {}
           }
-          variant={featured ? "default" : "outline"}
+          variant={featured ? "primary" : "outline"}
         >
           {isPending ? (
             <>

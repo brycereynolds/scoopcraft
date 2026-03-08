@@ -78,6 +78,7 @@ export const subscriptionStatusEnum = pgEnum("subscription_status", [
   "paused",
   "cancelled",
   "past_due",
+  "incomplete",
 ]);
 
 export const flavorSubmissionStatusEnum = pgEnum("flavor_submission_status", [
