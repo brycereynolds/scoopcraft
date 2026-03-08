@@ -137,8 +137,8 @@ export default function AboutPage() {
             className="text-2xl md:text-3xl leading-snug italic"
             style={{ fontFamily: "'DM Serif Display', serif", color: 'var(--foreground)' }}
           >
-            "To bring the joy of handcrafted ice cream to every doorstep — one small batch at a
-            time."
+            &ldquo;To bring the joy of handcrafted ice cream to every doorstep — one small batch at a
+            time.&rdquo;
           </blockquote>
         </div>
       </section>

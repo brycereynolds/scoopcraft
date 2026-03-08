@@ -214,7 +214,7 @@ export default async function SubscriptionPage({
             </div>
 
             <p className="mt-4 text-xs" style={{ color: "var(--foreground-muted)" }}>
-              Billing is managed securely via Stripe. Click "Manage Billing" to update payment methods,
+              Billing is managed securely via Stripe. Click &ldquo;Manage Billing&rdquo; to update payment methods,
               view invoices, or make other changes.
             </p>
           </div>
