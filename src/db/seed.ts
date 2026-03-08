@@ -5,12 +5,22 @@
  * Requires DATABASE_URL environment variable
  */
 
+// Photo URLs from Pexels (used as default photos for seed items)
+// Photo IDs match the imagery catalog
+const PEXELS_BASE = "https://images.pexels.com/photos";
+const CARD_PARAMS = "?auto=compress&cs=tinysrgb&fit=crop&h=400&w=400";
+
+function pexelsPhotoUrl(id: number): string {
+  return `${PEXELS_BASE}/${id}/pexels-photo-${id}.jpeg${CARD_PARAMS}`;
+}
+
 import { db } from "./index"
 import {
   users,
   menuItems,
   subscriptionPlans,
   achievementDefinitions,
+  deliverySlots,
 } from "./schema"
 
 async function seed() {
@@ -31,57 +41,91 @@ async function seed() {
 
   console.log("Admin user:", admin?.id ?? "already exists")
 
-  // 2. Menu items (2 flavors, 2 toppings, 1 vessel)
+  // 2. Menu items — flavors, toppings, sauces, vessels
   const menuItemValues = [
     {
-      name: "Vanilla Bean",
-      description: "Classic Madagascar vanilla bean ice cream",
-      price: "5.99",
+      name: "Vanilla Bean Dream",
+      description: "Classic Madagascar vanilla bean ice cream — smooth, rich, timeless.",
+      price: "8.50",
       category: "flavor" as const,
+      availabilityType: "permanent" as const,
       allergens: ["dairy"],
       dietaryFlags: ["gluten-free"],
       calories: 250,
       sortOrder: 1,
+      photoUrl: pexelsPhotoUrl(29851690),
     },
     {
-      name: "Chocolate Fudge",
-      description: "Rich dark chocolate fudge ice cream",
-      price: "5.99",
+      name: "Dark Chocolate Obsession",
+      description: "Intensely rich dark chocolate ice cream with a velvety finish.",
+      price: "9.00",
       category: "flavor" as const,
+      availabilityType: "permanent" as const,
       allergens: ["dairy"],
       dietaryFlags: ["gluten-free"],
-      calories: 280,
+      calories: 290,
       sortOrder: 2,
+      photoUrl: pexelsPhotoUrl(2846337),
     },
     {
-      name: "Sprinkles",
-      description: "Rainbow sprinkles",
-      price: "0.99",
+      name: "Strawberry Fields",
+      description: "Sun-ripened strawberries blended into a fresh, fruity scoop.",
+      price: "8.50",
+      category: "flavor" as const,
+      availabilityType: "permanent" as const,
+      allergens: ["dairy"],
+      dietaryFlags: ["gluten-free"],
+      calories: 230,
+      sortOrder: 3,
+      photoUrl: pexelsPhotoUrl(5535557),
+    },
+    {
+      name: "Salted Caramel Swirl",
+      description: "Buttery caramel ribbons through a lightly salted cream base. Seasonal favorite.",
+      price: "9.50",
+      category: "flavor" as const,
+      availabilityType: "seasonal" as const,
+      allergens: ["dairy"],
+      dietaryFlags: ["gluten-free"],
+      calories: 310,
+      sortOrder: 4,
+      photoUrl: pexelsPhotoUrl(5060454),
+    },
+    {
+      name: "Sprinkle Rainbow",
+      description: "Festive rainbow sprinkles — the classic finish.",
+      price: "1.00",
       category: "topping" as const,
+      availabilityType: "permanent" as const,
       allergens: [] as string[],
       dietaryFlags: ["vegan", "gluten-free"],
-      calories: 25,
+      calories: 20,
       sortOrder: 1,
+      photoUrl: pexelsPhotoUrl(1352251),
     },
     {
       name: "Hot Fudge",
-      description: "Warm chocolate fudge sauce",
-      price: "1.49",
-      category: "topping" as const,
+      description: "Warm, silky chocolate fudge sauce poured fresh.",
+      price: "1.50",
+      category: "sauce" as const,
+      availabilityType: "permanent" as const,
       allergens: ["dairy"],
       dietaryFlags: ["gluten-free"],
-      calories: 120,
-      sortOrder: 2,
+      calories: 110,
+      sortOrder: 1,
+      photoUrl: pexelsPhotoUrl(5060454),
     },
     {
       name: "Waffle Cone",
-      description: "Fresh-baked waffle cone",
-      price: "1.99",
+      description: "Fresh-baked golden waffle cone with a satisfying crunch.",
+      price: "2.00",
       category: "vessel" as const,
+      availabilityType: "permanent" as const,
       allergens: ["gluten", "dairy"],
       dietaryFlags: [] as string[],
       calories: 160,
       sortOrder: 1,
+      photoUrl: pexelsPhotoUrl(9227981),
     },
   ]
 
@@ -96,28 +140,22 @@ async function seed() {
   // 3. Subscription plans
   const planValues = [
     {
+      // Classic Box — $25/month (2 pints, free shipping, early flavor access, Sprinkle tier loyalty)
       name: "Classic Box",
-      description: "2 pints of our most popular flavors, delivered monthly",
-      price: "29.99",
-      stripePriceId: "price_classic_box_placeholder",
+      description: "Two handcrafted pints delivered monthly — our most popular flavors curated fresh.",
+      price: "25.00",
+      stripePriceId: "price_classic_monthly_placeholder",
       stripeProductId: "prod_classic_box_placeholder",
       sortOrder: 1,
     },
     {
+      // Deluxe Box — $45/month (4 pints, priority shipping, exclusive flavors, bonus points, Swirl tier loyalty)
       name: "Deluxe Box",
-      description: "4 pints with seasonal exclusives, delivered monthly",
-      price: "49.99",
-      stripePriceId: "price_deluxe_box_placeholder",
+      description: "Four premium pints plus exclusive seasonal creations and a surprise treat.",
+      price: "45.00",
+      stripePriceId: "price_deluxe_monthly_placeholder",
       stripeProductId: "prod_deluxe_box_placeholder",
       sortOrder: 2,
-    },
-    {
-      name: "Premium Box",
-      description: "6 pints with limited drops and toppings, delivered monthly",
-      price: "79.99",
-      stripePriceId: "price_premium_box_placeholder",
-      stripeProductId: "prod_premium_box_placeholder",
-      sortOrder: 3,
     },
   ]
 
@@ -161,6 +199,46 @@ async function seed() {
     .returning()
 
   console.log("Achievements inserted:", insertedAchievements.length)
+
+  // 5. Delivery slots — next 7 days, 4 slots per day
+  const slotTimes = [
+    { startTime: "09:00", endTime: "11:00", label: "morning" },
+    { startTime: "11:00", endTime: "13:00", label: "midday" },
+    { startTime: "14:00", endTime: "16:00", label: "afternoon" },
+    { startTime: "18:00", endTime: "20:00", label: "evening" },
+  ]
+
+  const deliverySlotValues: Array<{
+    slotDate: string;
+    startTime: string;
+    endTime: string;
+    maxOrders: number;
+    isActive: boolean;
+  }> = []
+
+  for (let dayOffset = 1; dayOffset <= 7; dayOffset++) {
+    const date = new Date()
+    date.setDate(date.getDate() + dayOffset)
+    const slotDate = date.toISOString().split("T")[0]
+
+    for (const slot of slotTimes) {
+      deliverySlotValues.push({
+        slotDate,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        maxOrders: 10,
+        isActive: true,
+      })
+    }
+  }
+
+  const insertedSlots = await db
+    .insert(deliverySlots)
+    .values(deliverySlotValues)
+    .onConflictDoNothing()
+    .returning()
+
+  console.log("Delivery slots inserted:", insertedSlots.length)
 
   console.log("Seed complete!")
   process.exit(0)
