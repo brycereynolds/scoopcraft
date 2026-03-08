@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, Truck, Star, Heart } from "lucide-react";
-import { IMAGES, pexelsUrl } from "@/lib/imagery";
+import { ChevronDown } from "lucide-react";
 
 const plans = [
   {
@@ -166,7 +165,7 @@ export default function SubscriptionsPage() {
                 </ul>
 
                 <div className="mt-auto">
-                  <Link href="/account/subscription">
+                  <Link href={`/account/subscription?plan=${plan.id}&name=${encodeURIComponent(plan.name)}`}>
                     <Button
                       className="w-full text-base py-6"
                       style={
@@ -177,7 +176,7 @@ export default function SubscriptionsPage() {
                             }
                           : {}
                       }
-                      variant={plan.featured ? "primary" : "outline"}
+                      variant={plan.featured ? "default" : "outline"}
                     >
                       {plan.cta}
                     </Button>
@@ -201,38 +200,13 @@ export default function SubscriptionsPage() {
         <div className="mx-auto max-w-4xl">
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 text-center">
             {[
-              {
-                badge: (
-                  <img
-                    src={pexelsUrl(IMAGES.flavors.vanilla, "icon")}
-                    alt="Vanilla ice cream"
-                    width={48}
-                    height={48}
-                    className="rounded-full object-cover"
-                    style={{ backgroundColor: IMAGES.flavors.vanilla.avgColor }}
-                  />
-                ),
-                label: "Handcrafted",
-                sub: "small-batch recipes",
-              },
-              {
-                badge: <Truck className="h-8 w-8" style={{ color: "var(--primary)" }} />,
-                label: "Free shipping",
-                sub: "on every box",
-              },
-              {
-                badge: <Star className="h-8 w-8" style={{ color: "var(--primary)" }} />,
-                label: "Loyalty rewards",
-                sub: "earn on every order",
-              },
-              {
-                badge: <Heart className="h-8 w-8" style={{ color: "var(--primary)" }} />,
-                label: "Cancel anytime",
-                sub: "no commitment needed",
-              },
+              { emoji: "🍦", label: "Handcrafted", sub: "small-batch recipes" },
+              { emoji: "🚚", label: "Free shipping", sub: "on every box" },
+              { emoji: "⭐", label: "Loyalty rewards", sub: "earn on every order" },
+              { emoji: "❤️", label: "Cancel anytime", sub: "no commitment needed" },
             ].map((item) => (
               <div key={item.label} className="flex flex-col items-center gap-2">
-                <span className="flex h-12 w-12 items-center justify-center">{item.badge}</span>
+                <span className="text-3xl">{item.emoji}</span>
                 <div>
                   <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                     {item.label}

@@ -1,9 +1,8 @@
-import { render as renderEmail } from "@react-email/render"
-import { postmarkClient, FROM_EMAIL } from "./postmark"
+import { resend, FROM_EMAIL } from "./resend"
 import type { ReactElement } from "react"
 
 /**
- * Send a transactional email using Postmark.
+ * Send a transactional email using Resend.
  * Returns true on success, false on failure (never throws).
  */
 export async function sendEmail({
@@ -15,23 +14,23 @@ export async function sendEmail({
   subject: string
   react: ReactElement
 }): Promise<boolean> {
-  if (!process.env.POSTMARK_SERVER_TOKEN) {
-    console.warn(`[email] Skipping send to ${to} — POSTMARK_SERVER_TOKEN not configured`)
+  if (!process.env.RESEND_API_KEY) {
+    console.warn(`[email] Skipping send to ${to} — RESEND_API_KEY not configured`)
     return false
   }
 
   try {
-    const html = await renderEmail(react)
-    const text = await renderEmail(react, { plainText: true })
-
-    await postmarkClient.sendEmail({
-      From: FROM_EMAIL,
-      To: to,
-      Subject: subject,
-      HtmlBody: html,
-      TextBody: text,
-      MessageStream: "outbound",
+    const { error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to,
+      subject,
+      react,
     })
+
+    if (error) {
+      console.error(`[email] Failed to send "${subject}" to ${to}:`, error)
+      return false
+    }
 
     console.log(`[email] Sent "${subject}" to ${to}`)
     return true

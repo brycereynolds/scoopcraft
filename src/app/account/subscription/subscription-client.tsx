@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
-import { loadStripe, type Stripe, type StripeElements } from "@stripe/stripe-js";
+import { useState, useTransition, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  createSubscription,
+  createCheckoutSession,
   cancelSubscription,
   pauseSubscription,
   resumeSubscription,
@@ -21,11 +19,7 @@ import {
   type SubscriptionPlan,
   type Subscription,
 } from "@/actions/subscriptions";
-import { Loader2, ExternalLink, Lock, ShieldCheck } from "lucide-react";
-
-const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-  : null;
+import { Loader2, ExternalLink } from "lucide-react";
 
 // ─────────────────────────────────────────────
 // Plan card for users with no subscription
@@ -59,98 +53,34 @@ function getPlanFeatures(name: string): string[] {
 interface PlanCardProps {
   plan: SubscriptionPlan;
   featured?: boolean;
+  /** If true, automatically redirect to Stripe checkout on mount */
+  autoCheckout?: boolean;
 }
 
-function PlanCard({ plan, featured }: PlanCardProps) {
+function PlanCard({ plan, featured, autoCheckout }: PlanCardProps) {
   const [isPending, startTransition] = useTransition();
-  const [isConfirming, startConfirming] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [stripeInstance, setStripeInstance] = useState<Stripe | null>(null);
-  const [elements, setElements] = useState<StripeElements | null>(null);
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const paymentElementRef = useRef<HTMLDivElement>(null);
   const features = getPlanFeatures(plan.name);
 
-  // Step 1: Call server action to create subscription and get clientSecret
+  // Auto-initiate checkout if this plan was pre-selected via URL param
+  useEffect(() => {
+    if (autoCheckout) {
+      handleSubscribe();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoCheckout]);
+
   function handleSubscribe() {
     setError(null);
     startTransition(async () => {
       try {
-        const result = await createSubscription(plan.id.toString());
-        setClientSecret(result.clientSecret);
-        setShowPaymentForm(true);
-
-        const stripe = await stripePromise;
-        if (!stripe) {
-          setError("Payment system not configured. Please ensure NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is set.");
-          return;
-        }
-        setStripeInstance(stripe);
+        const result = await createCheckoutSession(plan.id.toString());
+        // Redirect to Stripe's hosted checkout page for secure payment collection
+        window.location.href = result.url;
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to create subscription");
+        setError(err instanceof Error ? err.message : "Failed to start checkout. Please try again.");
       }
     });
-  }
-
-  // Step 2: Mount the Stripe PaymentElement once we have stripe + clientSecret + DOM ref
-  useEffect(() => {
-    if (!stripeInstance || !clientSecret || !paymentElementRef.current) return;
-
-    const els = stripeInstance.elements({
-      clientSecret,
-      appearance: {
-        theme: "stripe",
-        variables: {
-          colorPrimary: "#D4536A",
-          colorBackground: "#FFFFFF",
-          colorText: "#2D2420",
-          colorDanger: "#C9413A",
-          fontFamily: "DM Sans, Inter, system-ui, sans-serif",
-          borderRadius: "12px",
-        },
-      },
-    });
-
-    const paymentElement = els.create("payment");
-    paymentElement.mount(paymentElementRef.current);
-    setElements(els);
-
-    return () => {
-      paymentElement.unmount();
-    };
-  }, [stripeInstance, clientSecret]);
-
-  // Step 3: Confirm the PaymentIntent with Stripe.js
-  function handleConfirmPayment() {
-    setError(null);
-
-    if (!stripeInstance || !elements || !clientSecret) {
-      setError("Payment not ready. Please wait and try again.");
-      return;
-    }
-
-    startConfirming(async () => {
-      const { error: stripeError } = await stripeInstance.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/account/subscription?success=true`,
-        },
-      });
-
-      // confirmPayment only returns here if there's an error (success = Stripe redirects)
-      if (stripeError) {
-        setError(stripeError.message ?? "Payment failed. Please try again.");
-      }
-    });
-  }
-
-  function handleCancelPayment() {
-    setShowPaymentForm(false);
-    setClientSecret(null);
-    setStripeInstance(null);
-    setElements(null);
-    setError(null);
   }
 
   return (
@@ -214,121 +144,49 @@ function PlanCard({ plan, featured }: PlanCardProps) {
         </p>
       )}
 
-      {/* Stripe PaymentElement — shown after server creates subscription */}
-      {showPaymentForm && (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2 text-sm font-medium" style={{ color: "var(--foreground)" }}>
-            <Lock className="w-4 h-4" style={{ color: "var(--primary)" }} />
-            Enter payment details
-          </div>
-
-          {/* PaymentElement mount point */}
-          <div ref={paymentElementRef} className="min-h-[160px]">
-            {!elements && (
-              <div className="flex items-center justify-center h-32">
-                <Loader2 className="w-5 h-5 animate-spin" style={{ color: "var(--primary)" }} />
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center justify-center gap-1.5 text-xs" style={{ color: "var(--foreground-muted)" }}>
-            <ShieldCheck className="w-3.5 h-3.5" style={{ color: "var(--success)" }} />
-            Secured by Stripe — card details are never stored on our servers.
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={handleCancelPayment}
-              disabled={isConfirming}
-            >
-              Back
-            </Button>
-            <Button
-              className="flex-1"
-              onClick={handleConfirmPayment}
-              disabled={isConfirming || !elements}
-              style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
-            >
-              {isConfirming ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Confirming...
-                </>
-              ) : (
-                `Confirm — $${parseFloat(plan.price).toFixed(0)}/mo`
-              )}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {!showPaymentForm && (
-        <Button
-          onClick={handleSubscribe}
-          disabled={isPending}
-          className="mt-auto w-full"
-          style={
-            featured
-              ? { backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }
-              : {}
-          }
-          variant={featured ? "primary" : "outline"}
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Preparing checkout...
-            </>
-          ) : (
-            "Subscribe"
-          )}
-        </Button>
-      )}
+      <Button
+        onClick={handleSubscribe}
+        disabled={isPending}
+        className="mt-auto w-full"
+        style={
+          featured
+            ? { backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }
+            : {}
+        }
+        variant={featured ? "default" : "outline"}
+      >
+        {isPending ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          "Subscribe"
+        )}
+      </Button>
     </div>
   );
 }
 
 interface NoSubscriptionViewProps {
   plans: SubscriptionPlan[];
+  preselectedPlanName?: string | null;
 }
 
-export function NoSubscriptionView({ plans }: NoSubscriptionViewProps) {
+export function NoSubscriptionView({ plans, preselectedPlanName }: NoSubscriptionViewProps) {
   const sorted = [...plans].sort((a, b) => a.sortOrder - b.sortOrder);
   const featured = sorted[sorted.length - 1];
-  const searchParams = useSearchParams();
-  const success = searchParams.get("success");
-  const canceled = searchParams.get("canceled");
+
+  // Find a preselected plan if one was specified via URL param
+  const preselected = preselectedPlanName
+    ? sorted.find((p) =>
+        p.name.toLowerCase().includes(preselectedPlanName.toLowerCase()) ||
+        preselectedPlanName.toLowerCase().includes(p.name.toLowerCase().split(" ")[0])
+      )
+    : null;
 
   return (
     <div className="flex flex-col gap-6">
-      {success === "true" && (
-        <div
-          className="rounded-xl border p-4 text-sm font-medium"
-          style={{
-            backgroundColor: "var(--success-bg, #f0fdf4)",
-            borderColor: "var(--success, #16a34a)",
-            color: "var(--success, #16a34a)",
-          }}
-        >
-          Your subscription is active — welcome aboard! Delivery details will arrive by email.
-        </div>
-      )}
-
-      {canceled === "true" && (
-        <div
-          className="rounded-xl border p-4 text-sm"
-          style={{
-            backgroundColor: "var(--warning-bg, #fffbeb)",
-            borderColor: "var(--warning, #d97706)",
-            color: "var(--warning, #d97706)",
-          }}
-        >
-          Payment was not completed. You can try again anytime.
-        </div>
-      )}
-
       <div>
         <h2 className="text-2xl font-semibold" style={{ fontFamily: "'DM Serif Display', serif", color: "var(--foreground)" }}>
           Choose a Plan
@@ -340,7 +198,12 @@ export function NoSubscriptionView({ plans }: NoSubscriptionViewProps) {
 
       <div className="grid gap-6 sm:grid-cols-2">
         {sorted.map((plan) => (
-          <PlanCard key={plan.id} plan={plan} featured={plan.id === featured?.id} />
+          <PlanCard
+            key={plan.id}
+            plan={plan}
+            featured={preselected ? plan.id === preselected.id : plan.id === featured?.id}
+            autoCheckout={preselected?.id === plan.id}
+          />
         ))}
       </div>
     </div>

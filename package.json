@@ -17,6 +17,7 @@
   "dependencies": {
     "@auth/drizzle-adapter": "^1.0.0",
     "@aws-sdk/client-s3": "^3.0.0",
+    "@base-ui/react": "^1.2.0",
     "@node-rs/argon2": "^2.0.0",
     "@radix-ui/react-dialog": "^1.0.0",
     "@radix-ui/react-dropdown-menu": "^2.0.0",

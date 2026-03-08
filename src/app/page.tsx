@@ -1,62 +1,447 @@
-import Link from "next/link"
+export const dynamic = 'force-dynamic';
+import Link from 'next/link';
+import Image from 'next/image';
+import { db } from '@/db';
+import { menuItems } from '@/db/schema';
+import { or, eq, and } from 'drizzle-orm';
+import { MenuItemCard } from '@/components/menu-item-card';
+import { IMAGES, pexelsUrl } from '@/lib/imagery';
+import type { MenuItemWithPhoto } from '@/types';
 
-export default function Home() {
+// ── Data fetching ────────────────────────────────────────────────────────────
+
+async function getFeaturedItems(): Promise<MenuItemWithPhoto[]> {
+  try {
+    const rows = await db
+      .select({
+        id: menuItems.id,
+        name: menuItems.name,
+        description: menuItems.description,
+        price: menuItems.price,
+        category: menuItems.category,
+        photoUrl: menuItems.photoUrl,
+        dietaryFlags: menuItems.dietaryFlags,
+        isAvailable: menuItems.isAvailable,
+        availabilityType: menuItems.availabilityType,
+        calories: menuItems.calories,
+        sortOrder: menuItems.sortOrder,
+      })
+      .from(menuItems)
+      .where(
+        and(
+          eq(menuItems.isAvailable, true),
+          or(
+            eq(menuItems.availabilityType, 'permanent'),
+            eq(menuItems.availabilityType, 'flavor_of_day'),
+            eq(menuItems.availabilityType, 'flavor_of_week')
+          )
+        )
+      )
+      .orderBy(menuItems.sortOrder, menuItems.name)
+      .limit(6);
+
+    return rows.map((row) => {
+      const flags = row.dietaryFlags ?? [];
+      return {
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        price: row.price,
+        category: row.category,
+        photoUrl: row.photoUrl,
+        isVegan: flags.includes('vegan'),
+        isDairyFree: flags.includes('dairy-free'),
+        isGlutenFree: flags.includes('gluten-free'),
+        isAvailable: row.isAvailable,
+        availabilityType: row.availabilityType,
+        calories: row.calories,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+// ── Placeholder card for empty state ────────────────────────────────────────
+
+function PlaceholderCard({ photoUrl, avgColor, name, price }: { photoUrl: string; avgColor: string; name: string; price: string }) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#FFF5F6] to-white px-4">
-      <div className="text-center">
-        <h1
-          className="text-6xl font-bold text-[#D4536A] sm:text-7xl"
-          style={{ fontFamily: "'DM Serif Display', serif" }}
+    <div
+      className="flex flex-col rounded-xl overflow-hidden bg-white"
+      style={{ boxShadow: '0 2px 8px -2px rgba(45, 36, 32, 0.06), 0 1px 3px -1px rgba(45, 36, 32, 0.04)' }}
+    >
+      <div className="relative aspect-[4/3] overflow-hidden" style={{ backgroundColor: avgColor }}>
+        <Image
+          src={photoUrl}
+          alt={name}
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
+      </div>
+      <div className="p-5">
+        <h3
+          className="text-lg mb-1"
+          style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: 'var(--foreground)' }}
         >
-          ScoopCraft
-        </h1>
-        <p className="mt-4 text-xl text-[#C4883D]">
-          Handcrafted happiness, delivered to your door.
-        </p>
-        <div className="mt-8 flex items-center justify-center gap-3">
-          <div className="h-1 w-8 rounded-full bg-[#D4536A]" />
-          <p className="text-sm font-medium uppercase tracking-widest text-gray-400">
-            Coming Soon
-          </p>
-          <div className="h-1 w-8 rounded-full bg-[#D4536A]" />
-        </div>
-        <p className="mt-6 max-w-md text-gray-500">
-          Custom ice cream creations, loyalty rewards, seasonal drops, and
-          delivery straight to your door. The sweetest experience is almost here.
-        </p>
-        <Link
-          href="/login"
-          className="mt-8 inline-flex h-11 items-center justify-center rounded-lg bg-[#D4536A] px-8 text-sm font-medium text-white transition-colors hover:bg-[#C4455C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4536A]"
-        >
-          Early Access
-        </Link>
-        <div className="mt-12 flex items-center justify-center gap-6">
-          <div className="flex flex-col items-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#D4536A]/10">
-              <svg className="h-6 w-6 text-[#D4536A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            </div>
-            <span className="mt-2 text-xs text-gray-500">Custom Builds</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#C4883D]/10">
-              <svg className="h-6 w-6 text-[#C4883D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-              </svg>
-            </div>
-            <span className="mt-2 text-xs text-gray-500">Rewards</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#7DBBA2]/10">
-              <svg className="h-6 w-6 text-[#7DBBA2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <span className="mt-2 text-xs text-gray-500">Fast Delivery</span>
-          </div>
+          {name}
+        </h3>
+        <div className="flex items-center justify-between mt-3">
+          <span className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
+            {price}
+          </span>
+          <span
+            className="rounded-lg px-3 py-1.5 text-sm font-medium"
+            style={{ backgroundColor: 'var(--muted)', color: 'var(--foreground-secondary)' }}
+          >
+            Coming soon
+          </span>
         </div>
       </div>
-    </main>
-  )
+    </div>
+  );
+}
+
+const PLACEHOLDER_ITEMS = [
+  { photoUrl: pexelsUrl(IMAGES.flavors.strawberry, 'card'), avgColor: IMAGES.flavors.strawberry.avgColor, name: 'Strawberry Fields', price: '$6.50' },
+  { photoUrl: pexelsUrl(IMAGES.flavors.chocolate, 'card'), avgColor: IMAGES.flavors.chocolate.avgColor, name: 'Dark Chocolate Dream', price: '$6.50' },
+  { photoUrl: pexelsUrl(IMAGES.flavors.matcha, 'card'), avgColor: IMAGES.flavors.matcha.avgColor, name: 'Matcha Mochi Swirl', price: '$7.00' },
+  { photoUrl: pexelsUrl(IMAGES.flavors.blueberry, 'card'), avgColor: IMAGES.flavors.blueberry.avgColor, name: 'Blueberry Lavender', price: '$6.75' },
+  { photoUrl: pexelsUrl(IMAGES.flavors.pistachio, 'card'), avgColor: IMAGES.flavors.pistachio.avgColor, name: 'Peanut Butter Crunch', price: '$6.50' },
+  { photoUrl: pexelsUrl(IMAGES.flavors.lemon_sorbet, 'card'), avgColor: IMAGES.flavors.lemon_sorbet.avgColor, name: 'Lemon Verbena Sorbet', price: '$5.75' },
+];
+
+// ── Page ─────────────────────────────────────────────────────────────────────
+
+export default async function HomePage() {
+  const featured = await getFeaturedItems();
+
+  return (
+    <div style={{ backgroundColor: 'var(--background)' }}>
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section
+        className="relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #FFF8F0 0%, #FEFAE0 50%, #FFF0F3 100%)' }}
+      >
+        <div className="mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row lg:items-center min-h-[600px] lg:min-h-[700px]">
+            {/* LEFT: Text content - takes left half on lg+ */}
+            <div className="flex-1 lg:max-w-[55%] py-20 md:py-28 lg:py-36 pr-0 lg:pr-12 z-10">
+              {/* Eyebrow */}
+              <span
+                className="inline-block rounded-full px-3 py-1 text-sm font-medium mb-6"
+                style={{
+                  backgroundColor: 'var(--primary)',
+                  color: 'var(--primary-foreground)',
+                }}
+              >
+                Artisan ice cream, delivered fresh
+              </span>
+
+              <h1
+                className="text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-6"
+                style={{
+                  fontFamily: "'DM Serif Display', Georgia, serif",
+                  color: 'var(--foreground)',
+                }}
+              >
+                Handcrafted Happiness, Delivered to Your Door
+              </h1>
+
+              <p
+                className="text-lg md:text-xl leading-relaxed mb-8 max-w-lg"
+                style={{ color: 'var(--foreground-secondary)' }}
+              >
+                Artisan ice cream made with love, delivered fresh to your doorstep.
+                Small batches, premium ingredients, unforgettable flavors.
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/menu"
+                  className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-base font-semibold transition-all duration-150 hover:brightness-110"
+                  style={{
+                    backgroundColor: 'var(--primary)',
+                    color: 'var(--primary-foreground)',
+                    boxShadow: '0 4px 12px rgba(212, 83, 106, 0.3)',
+                  }}
+                >
+                  Browse the Menu
+                </Link>
+                <Link
+                  href="/scoop-lab"
+                  className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-base font-semibold transition-all duration-150 hover:bg-muted"
+                  style={{
+                    backgroundColor: 'white',
+                    color: 'var(--foreground)',
+                    border: '1px solid var(--border)',
+                  }}
+                >
+                  Build Your Scoop
+                </Link>
+              </div>
+            </div>
+
+            {/* RIGHT: Hero image - takes right half on lg+, hidden on mobile */}
+            <div className="hidden lg:block lg:w-[45%] lg:absolute lg:inset-y-0 lg:right-0 overflow-hidden">
+              <Image
+                src={pexelsUrl(IMAGES.hero.main, "hero")}
+                alt={IMAGES.hero.main.alt}
+                fill
+                className="object-cover object-center"
+                priority
+                sizes="45vw"
+              />
+              {/* Gradient fade from left */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#FFF8F0] via-[rgba(255,248,240,0.3)] to-transparent pointer-events-none" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Why ScoopCraft ───────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-16 md:py-20">
+        <div className="text-center mb-12">
+          <h2
+            className="text-3xl md:text-4xl mb-3"
+            style={{
+              fontFamily: "'DM Serif Display', Georgia, serif",
+              color: 'var(--foreground)',
+            }}
+          >
+            Why ScoopCraft?
+          </h2>
+          <p className="text-base md:text-lg" style={{ color: 'var(--foreground-secondary)' }}>
+            Every detail designed around your perfect scoop
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            {
+              emoji: '🎨',
+              title: 'Artisan Quality',
+              description: 'Made in small batches with premium, locally sourced ingredients. No shortcuts, ever.',
+            },
+            {
+              emoji: '🚚',
+              title: 'Fast Delivery',
+              description: 'Fresh to your door within 2 hours. We time production to your delivery slot.',
+            },
+            {
+              emoji: '💝',
+              title: 'Loyalty Rewards',
+              description: 'Earn Sprinkle points with every order. Redeem for free scoops, discounts, and exclusive drops.',
+            },
+          ].map((card) => (
+            <div
+              key={card.title}
+              className="rounded-2xl p-8 text-center transition-all duration-200 hover:-translate-y-1"
+              style={{
+                backgroundColor: 'white',
+                boxShadow: '0 2px 8px -2px rgba(45, 36, 32, 0.06), 0 1px 3px -1px rgba(45, 36, 32, 0.04)',
+              }}
+            >
+              <div className="text-4xl mb-4 select-none">{card.emoji}</div>
+              <h3
+                className="text-xl mb-2"
+                style={{
+                  fontFamily: "'DM Serif Display', Georgia, serif",
+                  color: 'var(--foreground)',
+                }}
+              >
+                {card.title}
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--foreground-secondary)' }}>
+                {card.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Featured Flavors ─────────────────────────────────────────────── */}
+      <section
+        className="py-16 md:py-20"
+        style={{ backgroundColor: 'var(--muted)' }}
+      >
+        <div className="mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
+          <div className="flex items-end justify-between mb-10 flex-wrap gap-4">
+            <div>
+              <h2
+                className="text-3xl md:text-4xl mb-2"
+                style={{
+                  fontFamily: "'DM Serif Display', Georgia, serif",
+                  color: 'var(--foreground)',
+                }}
+              >
+                Featured Flavors
+              </h2>
+              <p className="text-base" style={{ color: 'var(--foreground-secondary)' }}>
+                Our most-loved scoops, ready to order
+              </p>
+            </div>
+            <Link
+              href="/menu"
+              className="text-sm font-semibold transition-colors hover:opacity-80"
+              style={{ color: 'var(--primary)' }}
+            >
+              View full menu →
+            </Link>
+          </div>
+
+          {featured.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featured.map((item) => (
+                <MenuItemCard key={item.id} item={item} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {PLACEHOLDER_ITEMS.map((p) => (
+                <PlaceholderCard key={p.name} {...p} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── Subscription Teaser ──────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 md:px-6 lg:px-8 py-16 md:py-20">
+        <div className="text-center mb-10">
+          <h2
+            className="text-3xl md:text-4xl mb-3"
+            style={{
+              fontFamily: "'DM Serif Display', Georgia, serif",
+              color: 'var(--foreground)',
+            }}
+          >
+            Join the ScoopCraft Club
+          </h2>
+          <p className="text-base md:text-lg max-w-xl mx-auto" style={{ color: 'var(--foreground-secondary)' }}>
+            A monthly delivery of handpicked artisan scoops, curated just for you.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          {/* Classic plan */}
+          <div
+            className="rounded-2xl p-8 flex flex-col border transition-all duration-200 hover:-translate-y-1"
+            style={{
+              backgroundColor: 'white',
+              borderColor: 'var(--border)',
+              boxShadow: '0 2px 8px -2px rgba(45, 36, 32, 0.06)',
+            }}
+          >
+            <div className="relative h-12 w-12 mb-3 rounded-xl overflow-hidden">
+              <Image src={pexelsUrl(IMAGES.flavors.vanilla, 'icon')} alt="Classic subscription" fill className="object-cover" sizes="48px" />
+            </div>
+            <h3
+              className="text-2xl mb-1"
+              style={{
+                fontFamily: "'DM Serif Display', Georgia, serif",
+                color: 'var(--foreground)',
+              }}
+            >
+              Classic
+            </h3>
+            <div className="flex items-baseline gap-1 mb-4">
+              <span className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>$25</span>
+              <span className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>/month</span>
+            </div>
+            <ul className="space-y-2 text-sm mb-6 flex-1" style={{ color: 'var(--foreground-secondary)' }}>
+              <li className="flex items-center gap-2">✓ 4 signature scoops</li>
+              <li className="flex items-center gap-2">✓ Curated monthly selection</li>
+              <li className="flex items-center gap-2">✓ Priority delivery</li>
+              <li className="flex items-center gap-2">✓ 2x Sprinkle points</li>
+            </ul>
+            <Link
+              href="/subscriptions"
+              className="block text-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110"
+              style={{
+                backgroundColor: 'var(--muted)',
+                color: 'var(--foreground)',
+              }}
+            >
+              Get Started
+            </Link>
+          </div>
+
+          {/* Deluxe plan */}
+          <div
+            className="rounded-2xl p-8 flex flex-col relative overflow-hidden transition-all duration-200 hover:-translate-y-1"
+            style={{
+              background: 'linear-gradient(135deg, var(--primary), #B8A4D6)',
+              boxShadow: '0 8px 24px rgba(212, 83, 106, 0.25)',
+            }}
+          >
+            <span className="absolute top-4 right-4 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-white/20 text-white">
+              Most Popular
+            </span>
+            <div className="relative h-12 w-12 mb-3 rounded-xl overflow-hidden">
+              <Image src={pexelsUrl(IMAGES.flavors.caramel, 'icon')} alt="Deluxe subscription" fill className="object-cover" sizes="48px" />
+            </div>
+            <h3
+              className="text-2xl mb-1 text-white"
+              style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
+            >
+              Deluxe
+            </h3>
+            <div className="flex items-baseline gap-1 mb-4">
+              <span className="text-3xl font-bold text-white">$45</span>
+              <span className="text-sm text-white/80">/month</span>
+            </div>
+            <ul className="space-y-2 text-sm mb-6 flex-1 text-white/90">
+              <li className="flex items-center gap-2">✓ 8 premium scoops</li>
+              <li className="flex items-center gap-2">✓ Exclusive limited-drop flavors</li>
+              <li className="flex items-center gap-2">✓ Free delivery, every time</li>
+              <li className="flex items-center gap-2">✓ 3x Sprinkle points</li>
+              <li className="flex items-center gap-2">✓ Early access to new flavors</li>
+            </ul>
+            <Link
+              href="/subscriptions"
+              className="block text-center rounded-xl px-4 py-2.5 text-sm font-semibold bg-white transition-all hover:bg-white/90"
+              style={{ color: 'var(--primary)' }}
+            >
+              Start Your Subscription
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Scoop Lab Promo ──────────────────────────────────────────────── */}
+      <section
+        className="mx-4 md:mx-6 lg:mx-8 mb-16 md:mb-20 rounded-3xl overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #7DBBA2 0%, #A8E0D0 50%, #D4536A 100%)',
+          maxWidth: 'calc(100% - 2rem)',
+        }}
+      >
+        <div className="mx-auto max-w-7xl px-8 md:px-12 lg:px-16 py-16 md:py-20">
+          <div className="max-w-2xl">
+            <div className="relative h-20 w-20 mb-6 rounded-2xl overflow-hidden">
+              <Image src={pexelsUrl(IMAGES.flavors.matcha, 'thumb')} alt="The Scoop Lab" fill className="object-cover" sizes="80px" />
+            </div>
+            <h2
+              className="text-3xl md:text-4xl lg:text-5xl text-white mb-4"
+              style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
+            >
+              The Scoop Lab
+            </h2>
+            <p className="text-lg text-white/90 mb-8 leading-relaxed">
+              Your imagination, your ice cream. Mix and match flavors, toppings, sauces, and vessels
+              to create a scoop that&apos;s entirely yours. Save it, share it, make it a regular.
+            </p>
+            <Link
+              href="/scoop-lab"
+              className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-base font-semibold bg-white transition-all hover:bg-white/90 hover:-translate-y-0.5"
+              style={{ color: 'var(--accent-foreground)' }}
+            >
+              Build Your Perfect Scoop →
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }

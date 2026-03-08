@@ -26,6 +26,10 @@ export interface CreateSubscriptionResult {
   subscriptionId: string
 }
 
+export interface CreateSubscriptionCheckoutResult {
+  url: string
+}
+
 export interface CreateCustomerPortalSessionResult {
   url: string
 }
@@ -171,7 +175,7 @@ export async function createSubscription(
 
   // Resolve or create Stripe price ID (dev-mode fallback)
   let stripePriceId = plan.stripePriceId
-  if (!stripePriceId || stripePriceId.includes("placeholder")) {
+  if (!stripePriceId || stripePriceId === "price_placeholder") {
     const stripeProductId = await getOrCreateStripeProduct(plan)
     stripePriceId = await createStripePrice(stripeProductId, parseFloat(plan.price), "month")
 
@@ -219,14 +223,12 @@ export async function createSubscription(
     throw new Error("No payment intent found on invoice")
   }
 
-  // Save subscription to DB with "incomplete" status — payment has not been confirmed yet.
-  // The status will be updated to "active" once the PaymentIntent is confirmed
-  // (via Stripe webhook or the client-side confirmPayment success redirect).
+  // Save subscription to DB
   await db.insert(subscriptions).values({
     userId: parseInt(userId, 10),
     planId: plan.id,
     stripeSubscriptionId: stripeSubscription.id,
-    status: "incomplete",
+    status: "active",
     currentPeriodStart: stripeSubscription.current_period_start
       ? new Date(stripeSubscription.current_period_start * 1000)
       : null,
@@ -242,6 +244,87 @@ export async function createSubscription(
     clientSecret: paymentIntent.client_secret,
     subscriptionId: stripeSubscription.id,
   }
+}
+
+/**
+ * Create a Stripe Checkout Session for a subscription plan.
+ * Redirects the user to Stripe's hosted checkout page for secure payment collection.
+ * On success, Stripe redirects to /subscriptions/success?session_id={id}
+ * On cancel, Stripe redirects to /subscriptions?cancelled=1
+ */
+export async function createCheckoutSession(
+  planId: string
+): Promise<CreateSubscriptionCheckoutResult> {
+  const userId = await requireAuth()
+
+  const parsed = planIdSchema.safeParse({ planId })
+  if (!parsed.success) {
+    throw new Error(parsed.error.errors[0]?.message ?? "Invalid plan ID")
+  }
+
+  // Look up the plan
+  const [plan] = await db
+    .select()
+    .from(subscriptionPlans)
+    .where(
+      and(
+        eq(subscriptionPlans.isActive, true),
+        eq(subscriptionPlans.id, parseInt(planId, 10))
+      )
+    )
+
+  if (!plan) {
+    throw new Error("Subscription plan not found or inactive")
+  }
+
+  // Resolve or create Stripe price ID
+  let stripePriceId = plan.stripePriceId
+  if (!stripePriceId || stripePriceId.includes("placeholder")) {
+    const stripeProductId = await getOrCreateStripeProduct(plan)
+    stripePriceId = await createStripePrice(stripeProductId, parseFloat(plan.price), "month")
+
+    // Persist the real Stripe IDs back to the plan record
+    await db
+      .update(subscriptionPlans)
+      .set({ stripePriceId, stripeProductId })
+      .where(eq(subscriptionPlans.id, plan.id))
+  }
+
+  // Ensure user has a Stripe customer
+  const stripeCustomerId = await createOrGetStripeCustomer(userId)
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+
+  // Create Stripe Checkout Session for subscription
+  const session = await stripe.checkout.sessions.create({
+    customer: stripeCustomerId,
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price: stripePriceId,
+        quantity: 1,
+      },
+    ],
+    mode: "subscription",
+    success_url: `${appUrl}/subscriptions/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appUrl}/subscriptions?cancelled=1`,
+    subscription_data: {
+      metadata: {
+        scoopcraft_user_id: userId,
+        scoopcraft_plan_id: plan.id.toString(),
+      },
+    },
+    metadata: {
+      scoopcraft_user_id: userId,
+      scoopcraft_plan_id: plan.id.toString(),
+    },
+  })
+
+  if (!session.url) {
+    throw new Error("Failed to create Stripe Checkout Session")
+  }
+
+  return { url: session.url }
 }
 
 /**

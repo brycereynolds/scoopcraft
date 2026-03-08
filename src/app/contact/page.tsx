@@ -1,220 +1,247 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+
+const subjects = [
+  'Order Issue',
+  'Subscription Help',
+  'Product Question',
+  'Feedback',
+  'Press & Partnerships',
+  'Other',
+];
 
 export default function ContactPage() {
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
   const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // In production this would POST to an API route
     setSubmitted(true);
   }
 
+  const inputBase: React.CSSProperties = {
+    backgroundColor: 'var(--surface)',
+    border: '1px solid var(--border)',
+    color: 'var(--foreground)',
+    borderRadius: '0.75rem',
+    width: '100%',
+    padding: '0.75rem 1rem',
+    fontSize: '0.875rem',
+    outline: 'none',
+  };
+
   return (
-    <div style={{ backgroundColor: 'var(--background)' }}>
+    <>
       {/* Header */}
-      <section
-        className="py-16 md:py-20"
-        style={{ background: 'linear-gradient(135deg, #FFF8F0 0%, #FEFAE0 50%, #FFF0F3 100%)' }}
-      >
-        <div className="mx-auto max-w-3xl px-4 md:px-6 text-center">
-          <span
-            className="inline-block rounded-full px-3 py-1 text-sm font-medium mb-6"
-            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+      <section className="py-20 px-4 text-center" style={{ backgroundColor: 'var(--muted)' }}>
+        <div className="mx-auto max-w-2xl">
+          <p
+            className="mb-3 text-sm font-semibold uppercase tracking-widest"
+            style={{ color: 'var(--secondary)' }}
+          >
+            We&apos;d love to hear from you
+          </p>
+          <h1
+            className="mb-4 text-5xl md:text-6xl"
+            style={{ fontFamily: "'DM Serif Display', serif", color: 'var(--foreground)' }}
           >
             Get in Touch
-          </span>
-          <h1
-            className="text-4xl md:text-5xl mb-4"
-            style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: 'var(--foreground)' }}
-          >
-            Contact Us
           </h1>
           <p className="text-lg" style={{ color: 'var(--foreground-secondary)' }}>
-            Questions, feedback, or a custom order request? We&apos;d love to hear from you.
+            Questions, feedback, or just want to talk ice cream? We&apos;re here for it.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-4 md:px-6 py-12 md:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact info */}
-          <div>
-            <h2
-              className="text-2xl mb-6"
-              style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: 'var(--foreground)' }}
-            >
-              Reach Out
-            </h2>
-            <div className="space-y-6">
-              {[
-                {
-                  emoji: '📧',
-                  label: 'Email',
-                  value: 'hello@scoopcraft.com',
-                  sub: 'We reply within a few hours',
-                },
-                {
-                  emoji: '📍',
-                  label: 'Production Kitchen',
-                  value: '123 Creamery Lane, Artisan District',
-                  sub: 'Not open to the public — delivery only',
-                },
-                {
-                  emoji: '🕐',
-                  label: 'Delivery Hours',
-                  value: 'Daily, 11am – 9pm',
-                  sub: 'Last order by 8:30pm',
-                },
-              ].map((item) => (
-                <div key={item.label} className="flex items-start gap-4">
-                  <span className="text-2xl">{item.emoji}</span>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide mb-0.5" style={{ color: 'var(--foreground-muted)' }}>
+      {/* Main content */}
+      <section className="py-16 px-4" style={{ backgroundColor: 'var(--background)' }}>
+        <div className="mx-auto max-w-5xl grid gap-12 md:grid-cols-5">
+          {/* Contact details */}
+          <aside className="md:col-span-2 space-y-8">
+            <div>
+              <h2
+                className="mb-5 text-2xl"
+                style={{ fontFamily: "'DM Serif Display', serif", color: 'var(--foreground)' }}
+              >
+                Contact Info
+              </h2>
+              <div className="space-y-5">
+                {[
+                  {
+                    label: 'Email',
+                    value: 'hello@scoopcraft.co',
+                    href: 'mailto:hello@scoopcraft.co',
+                  },
+                  { label: 'Hours', value: 'Mon – Fri, 9 AM – 6 PM EST', href: null },
+                  { label: 'Response time', value: 'Within 24 hours', href: null },
+                ].map((item) => (
+                  <div key={item.label}>
+                    <p
+                      className="text-xs font-semibold uppercase tracking-wide mb-1"
+                      style={{ color: 'var(--foreground-secondary)' }}
+                    >
                       {item.label}
                     </p>
-                    <p className="font-medium" style={{ color: 'var(--foreground)' }}>{item.value}</p>
-                    <p className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>{item.sub}</p>
+                    {item.href ? (
+                      <a
+                        href={item.href}
+                        className="text-sm underline underline-offset-2"
+                        style={{ color: 'var(--primary)' }}
+                      >
+                        {item.value}
+                      </a>
+                    ) : (
+                      <p className="text-sm" style={{ color: 'var(--foreground)' }}>
+                        {item.value}
+                      </p>
+                    )}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
+            {/* Info box */}
             <div
-              className="mt-10 rounded-2xl p-6"
-              style={{ backgroundColor: 'var(--muted)' }}
+              className="rounded-2xl p-5 text-sm leading-relaxed"
+              style={{
+                backgroundColor: 'var(--muted)',
+                border: '1px solid var(--border)',
+                color: 'var(--foreground-secondary)',
+              }}
             >
-              <p className="font-medium mb-2" style={{ color: 'var(--foreground)' }}>Need help with an order?</p>
-              <p className="text-sm mb-4" style={{ color: 'var(--foreground-secondary)' }}>
-                Check our{' '}
-                <Link href="/faq" className="font-medium" style={{ color: 'var(--primary)' }}>FAQ</Link>{' '}
-                for quick answers about delivery, subscriptions, and loyalty rewards.
-              </p>
+              <strong style={{ color: 'var(--foreground)' }}>Order issues?</strong> Please have your
+              order number handy when reaching out — it helps us resolve things much faster.
             </div>
-          </div>
+          </aside>
 
-          {/* Contact form */}
-          <div>
+          {/* Form */}
+          <div className="md:col-span-3">
             {submitted ? (
               <div
-                className="rounded-2xl p-8 text-center"
-                style={{ backgroundColor: 'var(--success-foreground)', border: '1px solid var(--success)' }}
+                className="rounded-2xl p-10 text-center"
+                style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}
               >
-                <div className="text-4xl mb-4">🎉</div>
+                <div className="text-4xl mb-4">🍦</div>
                 <h3
-                  className="text-2xl mb-2"
-                  style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: 'var(--foreground)' }}
+                  className="mb-2 text-2xl"
+                  style={{ fontFamily: "'DM Serif Display', serif", color: 'var(--foreground)' }}
                 >
-                  Message Sent!
+                  Message sent!
                 </h3>
-                <p className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
-                  Thanks for reaching out. We&apos;ll get back to you within a few hours.
+                <p style={{ color: 'var(--foreground-secondary)' }} className="text-sm">
+                  Thanks for reaching out. We&apos;ll get back to you within 24 hours.
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <form
+                onSubmit={handleSubmit}
+                className="rounded-2xl p-8 space-y-5"
+                style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}
+              >
+                <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
+                    <label
+                      htmlFor="name"
+                      className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
+                      style={{ color: 'var(--foreground-secondary)' }}
+                    >
                       Name
                     </label>
                     <input
-                      type="text"
+                      id="name"
                       name="name"
+                      type="text"
                       required
+                      placeholder="Your name"
                       value={form.name}
                       onChange={handleChange}
-                      placeholder="Your name"
-                      className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all focus:ring-2"
-                      style={{
-                        backgroundColor: 'var(--surface)',
-                        border: '1px solid var(--border)',
-                        color: 'var(--foreground)',
-                      }}
+                      style={inputBase}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
+                    <label
+                      htmlFor="email"
+                      className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
+                      style={{ color: 'var(--foreground-secondary)' }}
+                    >
                       Email
                     </label>
                     <input
-                      type="email"
+                      id="email"
                       name="email"
+                      type="email"
                       required
+                      placeholder="you@example.com"
                       value={form.email}
                       onChange={handleChange}
-                      placeholder="you@example.com"
-                      className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all focus:ring-2"
-                      style={{
-                        backgroundColor: 'var(--surface)',
-                        border: '1px solid var(--border)',
-                        color: 'var(--foreground)',
-                      }}
+                      style={inputBase}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
+                  <label
+                    htmlFor="subject"
+                    className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
+                    style={{ color: 'var(--foreground-secondary)' }}
+                  >
                     Subject
                   </label>
                   <select
+                    id="subject"
                     name="subject"
                     required
                     value={form.subject}
                     onChange={handleChange}
-                    className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all focus:ring-2"
-                    style={{
-                      backgroundColor: 'var(--surface)',
-                      border: '1px solid var(--border)',
-                      color: form.subject ? 'var(--foreground)' : 'var(--foreground-muted)',
-                    }}
+                    style={{ ...inputBase, cursor: 'pointer' }}
                   >
-                    <option value="" disabled>Select a topic...</option>
-                    <option value="order">Order issue</option>
-                    <option value="delivery">Delivery question</option>
-                    <option value="subscription">Subscription help</option>
-                    <option value="custom">Custom / bulk order</option>
-                    <option value="feedback">Feedback</option>
-                    <option value="other">Other</option>
+                    <option value="" disabled>
+                      Select a topic…
+                    </option>
+                    {subjects.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
+                  <label
+                    htmlFor="message"
+                    className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
+                    style={{ color: 'var(--foreground-secondary)' }}
+                  >
                     Message
                   </label>
                   <textarea
+                    id="message"
                     name="message"
                     required
                     rows={5}
+                    placeholder="Tell us how we can help…"
                     value={form.message}
                     onChange={handleChange}
-                    placeholder="Tell us how we can help..."
-                    className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none transition-all focus:ring-2"
-                    style={{
-                      backgroundColor: 'var(--surface)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--foreground)',
-                    }}
+                    style={{ ...inputBase, resize: 'vertical' }}
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full rounded-xl px-6 py-3 text-base font-semibold transition-all hover:brightness-110"
-                  style={{
-                    backgroundColor: 'var(--primary)',
-                    color: 'var(--primary-foreground)',
-                    boxShadow: '0 4px 12px rgba(212,83,106,0.3)',
-                  }}
+                  className="w-full rounded-full py-3 text-sm font-semibold transition-opacity duration-150 hover:opacity-90"
+                  style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
                 >
                   Send Message
                 </button>
@@ -223,6 +250,6 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-    </div>
+    </>
   );
 }

@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { ShoppingCart, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { addToCart } from '@/actions/cart';
-import { IMAGES, pexelsUrl } from '@/lib/imagery';
 import type { MenuItemWithPhoto } from '@/types';
+import { IMAGES, pexelsUrl } from '@/lib/imagery';
 
 interface MenuItemCardProps {
   item: MenuItemWithPhoto;
@@ -27,12 +27,12 @@ const AVAILABILITY_LABELS: Record<string, { label: string; color: string }> = {
   flavor_of_week: { label: 'Flavor of the Week', color: 'bg-primary/10 text-primary border border-primary/20' },
 };
 
-const FALLBACK_BY_CATEGORY: Record<string, string> = {
-  flavor: pexelsUrl(IMAGES.hero.main, 'card'),
-  topping: pexelsUrl(IMAGES.toppings.sprinkles, 'card'),
-  sauce: pexelsUrl(IMAGES.toppings.hot_fudge, 'card'),
-  vessel: pexelsUrl(IMAGES.vessels.waffle_cone, 'card'),
-  extra: pexelsUrl(IMAGES.hero.colorful_bowls, 'card'),
+const EMOJI_BY_CATEGORY: Record<string, string> = {
+  flavor: '🍦',
+  topping: '🍫',
+  sauce: '🍯',
+  vessel: '🍧',
+  extra: '✨',
 };
 
 const PEXELS_FALLBACK: Record<string, string> = {
@@ -104,13 +104,14 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
-          <Image
-            src={FALLBACK_BY_CATEGORY[item.category] ?? pexelsUrl(IMAGES.hero.main, 'card')}
-            alt={item.name}
-            fill
-            className="object-cover opacity-80"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+          <div
+            className="flex h-full w-full items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #FDF8F4, #FFF0F3)' }}
+          >
+            <span className="text-5xl select-none">
+              {EMOJI_BY_CATEGORY[item.category] ?? '🍦'}
+            </span>
+          </div>
         )}
 
         {/* Availability badge — top right */}
@@ -178,7 +179,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
             onClick={handleAddToCart}
             disabled={loading || !item.isAvailable}
             size="sm"
-            variant={isScoop ? 'secondary' : 'primary'}
+            variant={isScoop ? 'secondary' : 'default'}
             className="shrink-0"
           >
             {isScoop ? (

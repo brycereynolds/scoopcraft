@@ -6,9 +6,6 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import React from "react";
-import { Sparkles } from "lucide-react";
-import { IMAGES, pexelsUrl } from "@/lib/imagery";
 
 // ─────────────────────────────────────────────
 // Tier config
@@ -17,16 +14,6 @@ import { IMAGES, pexelsUrl } from "@/lib/imagery";
 const TIER_DISPLAY = {
   sprinkle: {
     emoji: "🍬",
-    icon: (
-      <img
-        src={pexelsUrl(IMAGES.toppings.sprinkles, "icon")}
-        alt="Colorful sprinkles"
-        width={64}
-        height={64}
-        className="rounded-full object-cover"
-        style={{ backgroundColor: IMAGES.toppings.sprinkles.avgColor }}
-      />
-    ),
     label: "Sprinkle",
     color: "var(--tier-sprinkle)",
     textColor: "#9d4b61",
@@ -35,7 +22,6 @@ const TIER_DISPLAY = {
   },
   swirl: {
     emoji: "🌀",
-    icon: <Sparkles style={{ width: 64, height: 64, color: "#6b51a3" }} />,
     label: "Swirl",
     color: "var(--tier-swirl)",
     textColor: "#6b51a3",
@@ -44,27 +30,16 @@ const TIER_DISPLAY = {
   },
   sundae_supreme: {
     emoji: "👑",
-    icon: (
-      <img
-        src={pexelsUrl(IMAGES.hero.sundae, "icon")}
-        alt="Sundae Supreme tier"
-        width={64}
-        height={64}
-        className="rounded-full object-cover"
-        style={{ backgroundColor: IMAGES.hero.sundae.avgColor }}
-      />
-    ),
     label: "Sundae Supreme",
     color: "var(--tier-sundae-supreme)",
     textColor: "#8a6e1a",
     bgColor: "rgba(212, 168, 67, 0.15)",
     borderColor: "var(--tier-sundae-supreme)",
   },
-} satisfies Record<
+} as const satisfies Record<
   keyof typeof LOYALTY_TIERS,
   {
     emoji: string;
-    icon: React.ReactNode;
     label: string;
     color: string;
     textColor: string;
@@ -168,7 +143,7 @@ export default async function LoyaltyPage() {
         <div className="flex flex-wrap items-center gap-6">
           {/* Tier badge */}
           <div className="flex flex-col items-center text-center">
-            <span className="flex h-16 w-16 items-center justify-center leading-none">{display.icon}</span>
+            <span className="text-6xl leading-none">{display.emoji}</span>
             <span
               className="mt-2 text-lg font-bold"
               style={{ color: display.textColor, fontFamily: "'DM Serif Display', serif" }}

@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic';
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Star, Package, ShoppingBag, Gift } from "lucide-react";
 
 export default async function AccountPage() {
   const session = await auth();
@@ -22,10 +21,10 @@ export default async function AccountPage() {
     : user.email.slice(0, 2).toUpperCase();
 
   const quickLinks = [
-    { href: "/account/loyalty", label: "Loyalty Points", sub: "View your points balance and tier", icon: <Star className="h-6 w-6" /> },
-    { href: "/account/subscription", label: "Subscription", sub: "Manage your monthly plan", icon: <Package className="h-6 w-6" /> },
-    { href: "/account/orders", label: "Orders", sub: "View order history", icon: <ShoppingBag className="h-6 w-6" /> },
-    { href: "/account/referrals", label: "Referrals", sub: "Refer friends, earn 200 pts each", icon: <Gift className="h-6 w-6" /> },
+    { href: "/account/loyalty", label: "Loyalty Points", sub: "View your points balance and tier", emoji: "⭐" },
+    { href: "/account/subscription", label: "Subscription", sub: "Manage your monthly plan", emoji: "📦" },
+    { href: "/account/orders", label: "Orders", sub: "View order history", emoji: "🛍️" },
+    { href: "/account/referrals", label: "Referrals", sub: "Refer friends, earn 200 pts each", emoji: "🎁" },
   ];
 
   return (
@@ -75,7 +74,7 @@ export default async function AccountPage() {
             className="flex items-center gap-4 rounded-xl border p-4 transition-colors hover:bg-muted"
             style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: "var(--muted)", color: "var(--primary)" }}>{link.icon}</span>
+            <span className="text-2xl">{link.emoji}</span>
             <div>
               <p className="font-medium text-sm" style={{ color: "var(--foreground)" }}>
                 {link.label}

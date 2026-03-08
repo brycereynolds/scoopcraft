@@ -35,6 +35,7 @@ async function recordLoginAttempt(email: string, success: boolean, ipAddress?: s
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     Credentials({
       name: "credentials",
@@ -121,4 +122,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 })
 
-// Type augmentations for next-auth are in src/types/next-auth.d.ts
+// Extend NextAuth types
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+      email: string
+      name?: string | null
+      role: string
+    }
+  }
+  interface User {
+    role?: string
+  }
+}
+
+// JWT type is extended inline via next-auth module augmentation above
+// next-auth v5 beta does not support next-auth/jwt module augmentation

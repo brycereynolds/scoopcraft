@@ -39,7 +39,7 @@ export interface Subscription {
  * Returns the Stripe product ID.
  */
 export async function getOrCreateStripeProduct(plan: SubscriptionPlan): Promise<string> {
-  if (plan.stripeProductId && plan.stripeProductId.startsWith("prod_") && !plan.stripeProductId.includes("placeholder")) {
+  if (plan.stripeProductId && plan.stripeProductId.startsWith("prod_")) {
     return plan.stripeProductId
   }
 

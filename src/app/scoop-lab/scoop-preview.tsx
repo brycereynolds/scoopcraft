@@ -2,7 +2,6 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ScoopLabMenuItem } from '@/types';
-import { IMAGES, pexelsUrl } from '@/lib/imagery';
 
 type ScoopPreviewProps = {
   vessel: ScoopLabMenuItem | null;
@@ -38,30 +37,27 @@ function getFlavorColor(name: string): string {
   return 'linear-gradient(135deg, #D4536A, #B8A4D6)';
 }
 
-function getVesselImageUrl(name: string): string {
+function getVesselEmoji(name: string): string {
   const lower = name.toLowerCase();
-  if (lower.includes('waffle') || lower.includes('cone')) return pexelsUrl(IMAGES.vessels.waffle_cone, 'icon');
-  if (lower.includes('cup') || lower.includes('bowl')) return pexelsUrl(IMAGES.vessels.paper_cup, 'icon');
-  if (lower.includes('sundae')) return pexelsUrl(IMAGES.hero.sundae, 'icon');
-  if (lower.includes('float')) return pexelsUrl(IMAGES.hero.main, 'icon');
-  return pexelsUrl(IMAGES.vessels.waffle_cone, 'icon');
+  if (lower.includes('waffle') || lower.includes('cone')) return '🍦';
+  if (lower.includes('cup') || lower.includes('bowl')) return '🥤';
+  if (lower.includes('sundae')) return '🍨';
+  if (lower.includes('float')) return '🧃';
+  return '🍦';
 }
 
-function getToppingImageUrl(name: string): string {
+function getToppingEmoji(name: string): string {
   const lower = name.toLowerCase();
-  if (lower.includes('sprinkle')) return pexelsUrl(IMAGES.toppings.sprinkles, 'icon');
-  if (lower.includes('cherry')) return pexelsUrl(IMAGES.toppings.cherry, 'icon');
-  if (lower.includes('nut') || lower.includes('almond') || lower.includes('pecan')) return pexelsUrl(IMAGES.toppings.caramel_drizzle, 'icon');
-  if (lower.includes('coconut')) return pexelsUrl(IMAGES.toppings.sprinkles, 'icon');
-  if (lower.includes('cookie') || lower.includes('oreo') || lower.includes('brownie')) return pexelsUrl(IMAGES.toppings.chocolate_shavings, 'icon');
-  if (lower.includes('banana')) return pexelsUrl(IMAGES.toppings.berries, 'icon');
-  if (lower.includes('strawberry')) return pexelsUrl(IMAGES.toppings.berries, 'icon');
-  if (lower.includes('mango') || lower.includes('pineapple')) return pexelsUrl(IMAGES.toppings.berries, 'icon');
-  if (lower.includes('whipped') || lower.includes('cream')) return pexelsUrl(IMAGES.toppings.whipped_cream, 'icon');
-  if (lower.includes('chocolate')) return pexelsUrl(IMAGES.toppings.chocolate_shavings, 'icon');
-  if (lower.includes('caramel')) return pexelsUrl(IMAGES.toppings.caramel_drizzle, 'icon');
-  if (lower.includes('hot') || lower.includes('fudge')) return pexelsUrl(IMAGES.toppings.hot_fudge, 'icon');
-  return pexelsUrl(IMAGES.toppings.sprinkles, 'icon');
+  if (lower.includes('sprinkle')) return '🌈';
+  if (lower.includes('cherry')) return '🍒';
+  if (lower.includes('nut') || lower.includes('almond') || lower.includes('pecan')) return '🥜';
+  if (lower.includes('coconut')) return '🥥';
+  if (lower.includes('cookie') || lower.includes('oreo') || lower.includes('brownie')) return '🍪';
+  if (lower.includes('banana')) return '🍌';
+  if (lower.includes('strawberry')) return '🍓';
+  if (lower.includes('mango') || lower.includes('pineapple')) return '🍍';
+  if (lower.includes('whipped') || lower.includes('cream')) return '🤍';
+  return '✨';
 }
 
 export function ScoopPreview({
@@ -98,7 +94,7 @@ export function ScoopPreview({
 
       {isEmpty ? (
         <div className="flex flex-col items-center gap-2 py-8 opacity-40">
-          <img src={pexelsUrl(IMAGES.hero.main, 'icon')} alt="ice cream" className="w-10 h-10 object-cover rounded-full" />
+          <span className="text-5xl">🍦</span>
           <p className="text-xs font-medium" style={{ color: '#8C7B6B' }}>
             Your creation appears here
           </p>
@@ -124,11 +120,7 @@ export function ScoopPreview({
                     className="text-lg"
                     title={topping?.name}
                   >
-                    <img
-                      src={topping ? getToppingImageUrl(topping.name) : pexelsUrl(IMAGES.toppings.sprinkles, 'icon')}
-                      alt={topping?.name ?? 'topping'}
-                      className="w-8 h-8 object-cover rounded-full"
-                    />
+                    {topping ? getToppingEmoji(topping.name) : '✨'}
                   </motion.span>
                 ))}
               </div>
@@ -179,14 +171,10 @@ export function ScoopPreview({
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.7, opacity: 0 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-                className="mt-1"
+                className="mt-1 text-4xl"
                 title={vessel.name}
               >
-                <img
-                  src={getVesselImageUrl(vessel.name)}
-                  alt={vessel.name}
-                  className="w-8 h-8 object-cover rounded-full"
-                />
+                {getVesselEmoji(vessel.name)}
               </motion.div>
             )}
           </AnimatePresence>

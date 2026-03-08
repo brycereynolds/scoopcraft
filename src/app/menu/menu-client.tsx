@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MenuItemCard } from '@/components/menu-item-card';
-import { IMAGES, pexelsUrl } from '@/lib/imagery';
 import type { MenuItemWithPhoto } from '@/types';
 
 type Category = 'all' | 'flavor' | 'topping' | 'sauce' | 'vessel' | 'extra';
@@ -86,7 +85,7 @@ export function MenuClient({ items, cartItemCount }: MenuClientProps) {
 
         {cartItemCount > 0 && (
           <Link href="/cart">
-            <Button variant="primary" size="sm" className="shrink-0">
+            <Button variant="default" size="sm" className="shrink-0">
               <ShoppingCart className="h-4 w-4" />
               Cart ({cartItemCount})
             </Button>
@@ -103,15 +102,7 @@ export function MenuClient({ items, cartItemCount }: MenuClientProps) {
         </div>
       ) : (
         <div className="py-24 text-center">
-          <div className="mb-4 flex justify-center">
-            <img
-              src={pexelsUrl(IMAGES.hero.main, 'thumb')}
-              alt="Assorted artisan ice cream scoops"
-              width={200}
-              height={200}
-              className="rounded-full object-cover opacity-80"
-            />
-          </div>
+          <div className="text-5xl mb-4">🍦</div>
           <h3
             className="text-xl mb-2"
             style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}

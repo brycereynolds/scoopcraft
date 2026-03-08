@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createScoopLabConfig, addScoopLabToCart } from '@/actions/scoop-lab';
-import { IMAGES, pexelsUrl } from '@/lib/imagery';
 import { ScoopPreview } from './scoop-preview';
+import { IMAGES, pexelsUrl } from '@/lib/imagery';
 import type { ScoopLabMenuItem } from '@/types';
 
 type ScoopLabBuilderProps = {
@@ -149,39 +149,36 @@ function getItemPexelsUrl(item: ScoopLabMenuItem): string | null {
 
 function getItemEmoji(item: ScoopLabMenuItem): string {
   const lower = item.name.toLowerCase();
-  if (item.photoUrl) return item.photoUrl;
   // Vessels
-  if (lower.includes('waffle') || lower.includes('cone')) return pexelsUrl(IMAGES.vessels.waffle_cone, 'icon');
-  if (lower.includes('cup') || lower.includes('bowl')) return pexelsUrl(IMAGES.vessels.paper_cup, 'icon');
-  if (lower.includes('sundae')) return pexelsUrl(IMAGES.hero.sundae, 'icon');
+  if (lower.includes('waffle')) return '🧇';
+  if (lower.includes('cone')) return '🍦';
+  if (lower.includes('cup') || lower.includes('bowl')) return '🥤';
+  if (lower.includes('sundae')) return '🍨';
   // Flavors
-  if (lower.includes('vanilla')) return pexelsUrl(IMAGES.flavors.vanilla, 'icon');
-  if (lower.includes('chocolate') || lower.includes('fudge')) return pexelsUrl(IMAGES.flavors.chocolate, 'icon');
-  if (lower.includes('strawberry')) return pexelsUrl(IMAGES.flavors.strawberry, 'icon');
-  if (lower.includes('mint') || lower.includes('matcha')) return pexelsUrl(IMAGES.flavors.mint_chip, 'icon');
-  if (lower.includes('caramel')) return pexelsUrl(IMAGES.flavors.caramel, 'icon');
-  if (lower.includes('pistachio')) return pexelsUrl(IMAGES.flavors.pistachio, 'icon');
-  if (lower.includes('mango')) return pexelsUrl(IMAGES.flavors.mango, 'icon');
-  if (lower.includes('blueberry') || lower.includes('lavender')) return pexelsUrl(IMAGES.flavors.blueberry, 'icon');
-  if (lower.includes('lemon') || lower.includes('citrus')) return pexelsUrl(IMAGES.flavors.lemon_sorbet, 'icon');
-  if (lower.includes('coffee') || lower.includes('espresso')) return pexelsUrl(IMAGES.flavors.espresso, 'icon');
-  if (lower.includes('cookies') || lower.includes('oreo')) return pexelsUrl(IMAGES.flavors.cookies_cream, 'icon');
-  if (lower.includes('peach')) return pexelsUrl(IMAGES.flavors.peach, 'icon');
-  if (lower.includes('raspberry')) return pexelsUrl(IMAGES.flavors.raspberry, 'icon');
+  if (lower.includes('vanilla')) return '🍨';
+  if (lower.includes('chocolate') || lower.includes('fudge')) return '🍫';
+  if (lower.includes('strawberry')) return '🍓';
+  if (lower.includes('mint')) return '🌿';
+  if (lower.includes('caramel')) return '🍯';
+  if (lower.includes('pistachio')) return '🫘';
+  if (lower.includes('mango')) return '🥭';
+  if (lower.includes('blueberry')) return '🫐';
+  if (lower.includes('lemon') || lower.includes('citrus')) return '🍋';
+  if (lower.includes('coffee') || lower.includes('espresso')) return '☕';
+  if (lower.includes('cookies') || lower.includes('oreo')) return '🍪';
   // Toppings
-  if (lower.includes('sprinkle')) return pexelsUrl(IMAGES.toppings.sprinkles, 'icon');
-  if (lower.includes('cherry')) return pexelsUrl(IMAGES.toppings.cherry, 'icon');
-  if (lower.includes('whipped') || lower.includes('cream')) return pexelsUrl(IMAGES.toppings.whipped_cream, 'icon');
-  if (lower.includes('hot fudge') || lower.includes('fudge sauce')) return pexelsUrl(IMAGES.toppings.hot_fudge, 'icon');
-  if (lower.includes('caramel sauce')) return pexelsUrl(IMAGES.toppings.caramel_drizzle, 'icon');
-  if (lower.includes('chocolate')) return pexelsUrl(IMAGES.toppings.chocolate_shavings, 'icon');
-  if (lower.includes('berr') || lower.includes('strawberry sauce') || lower.includes('raspberry')) return pexelsUrl(IMAGES.toppings.berries, 'icon');
-  // Default fallback by category
-  if (item.category === 'flavor') return pexelsUrl(IMAGES.hero.main, 'icon');
-  if (item.category === 'topping') return pexelsUrl(IMAGES.toppings.sprinkles, 'icon');
-  if (item.category === 'sauce') return pexelsUrl(IMAGES.toppings.hot_fudge, 'icon');
-  if (item.category === 'vessel') return pexelsUrl(IMAGES.vessels.waffle_cone, 'icon');
-  return pexelsUrl(IMAGES.hero.main, 'icon');
+  if (lower.includes('sprinkle')) return '🌈';
+  if (lower.includes('cherry')) return '🍒';
+  if (lower.includes('nut')) return '🥜';
+  if (lower.includes('coconut')) return '🥥';
+  if (lower.includes('whipped')) return '🤍';
+  if (lower.includes('banana')) return '🍌';
+  // Sauces
+  if (lower.includes('hot fudge') || lower.includes('fudge sauce')) return '🍯';
+  if (lower.includes('caramel sauce')) return '🫙';
+  if (lower.includes('strawberry sauce') || lower.includes('raspberry')) return '🍓';
+  if (lower.includes('rainbow')) return '🌈';
+  return '✨';
 }
 
 function StepIndicator({ currentStep }: { currentStep: Step }) {
@@ -406,15 +403,7 @@ export function ScoopLabBuilder({ items }: ScoopLabBuilderProps) {
         className="mx-auto max-w-lg rounded-3xl p-12 text-center"
         style={{ background: 'white', boxShadow: '0 8px 24px rgba(45,36,32,0.08)' }}
       >
-        <div className="mb-4 w-24 h-24 mx-auto rounded-full overflow-hidden">
-          <Image
-            src={pexelsUrl(IMAGES.hero.main, 'thumb')}
-            alt="Ice cream scoops"
-            width={96}
-            height={96}
-            className="object-cover w-full h-full"
-          />
-        </div>
+        <div className="mb-4 text-6xl">🍦</div>
         <h2
           className="mb-2 text-2xl"
           style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: '#2D2420' }}

@@ -1,93 +1,59 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-
-export const metadata: Metadata = {
-  title: 'FAQ — ScoopCraft',
-  description: 'Frequently asked questions about ScoopCraft orders, delivery, subscriptions, and loyalty rewards.',
+export const metadata = {
+  title: 'FAQ | ScoopCraft',
+  description: 'Answers to common questions about ScoopCraft orders, delivery, products, and subscriptions.',
 };
 
-const faqs = [
+type FAQ = { q: string; a: string };
+
+const sections: { heading: string; faqs: FAQ[] }[] = [
   {
-    category: 'Orders & Delivery',
-    items: [
+    heading: 'Orders & Delivery',
+    faqs: [
       {
-        q: 'How fast is delivery?',
-        a: 'We deliver within 2 hours of your order being placed. You can select your preferred delivery window at checkout. We operate daily from 11am to 9pm.',
+        q: 'How long does delivery take?',
+        a: 'Orders ship within 24 hours of being placed and typically arrive within 1–3 business days, depending on your location. Expedited shipping options are available at checkout.',
       },
       {
-        q: 'What is your delivery radius?',
-        a: 'We currently deliver within a 15-mile radius of our production kitchen. Enter your address at checkout to confirm delivery availability.',
+        q: 'Do you offer local pickup?',
+        a: 'Not currently — but we ship nationwide! Every order is packed with dry ice and insulated liners to ensure your ice cream arrives perfectly frozen no matter where you are.',
       },
       {
-        q: 'How is the ice cream kept cold during delivery?',
-        a: 'All orders are packed in insulated cooler bags with dry ice. Your ice cream will stay frozen solid for up to 2 hours after dispatch.',
-      },
-      {
-        q: 'Can I schedule a delivery in advance?',
-        a: 'Yes! You can schedule deliveries up to 7 days in advance. Select your preferred date and time slot at checkout.',
-      },
-      {
-        q: 'What if I am not home when my order arrives?',
-        a: 'Our drivers will leave the order in a safe, shaded location and send you a photo confirmation. Orders left unattended for more than 30 minutes may begin to soften.',
+        q: "What's your return policy?",
+        a: "If your order arrives damaged, melted, or otherwise not as expected, contact us within 48 hours at hello@scoopcraft.co with a photo and we'll send a replacement at no charge, no questions asked.",
       },
     ],
   },
   {
-    category: 'Products & Flavors',
-    items: [
+    heading: 'Products & Ingredients',
+    faqs: [
       {
-        q: 'Are your products made in-house?',
-        a: 'Yes, every flavor is crafted in our production kitchen in small batches. We never resell third-party ice cream.',
+        q: 'Do you offer vegan options?',
+        a: 'Yes! We offer a rotating selection of vegan and dairy-free flavors made with oat milk and coconut cream bases. Look for the "Vegan" badge on the menu page.',
       },
       {
-        q: 'Do you have vegan or dairy-free options?',
-        a: 'Absolutely. We maintain a rotating selection of oat-milk and coconut-milk based sorbets and ice creams. Look for the "Vegan" or "Dairy-Free" badge on the menu.',
+        q: 'What packaging do you use?',
+        a: 'We use insulated, eco-friendly packaging made from recycled materials. Our dry ice packs are completely safe for home disposal — just leave them in a ventilated area to dissipate.',
       },
       {
-        q: 'How do I know if something contains allergens?',
-        a: 'Every product on our menu displays allergen tags (nuts, gluten, dairy, soy, etc.). If you have a severe allergy, please contact us before ordering — our kitchen handles all major allergens.',
+        q: 'How is the ice cream kept frozen during shipping?',
+        a: 'Each order is carefully packed with food-grade dry ice that keeps the contents below freezing for up to 48 hours in transit. For longer routes, we use gel packs in combination with dry ice.',
       },
       {
-        q: 'What is the "Flavor of the Day"?',
-        a: 'Each day our chefs craft a small-batch special flavor based on whatever seasonal ingredients are freshest. It\'s only available while supplies last, so order early!',
-      },
-    ],
-  },
-  {
-    category: 'Subscriptions',
-    items: [
-      {
-        q: 'What is included in the Classic Box?',
-        a: 'The Classic Box ($25/month) includes 4 curated artisan scoops, free standard shipping, and 2x Sprinkle loyalty points. Contents are selected by our team each month.',
-      },
-      {
-        q: 'What is included in the Deluxe Box?',
-        a: 'The Deluxe Box ($45/month) includes 8 premium scoops (including exclusive limited-drop flavors), free priority delivery, 3x Sprinkle points, and early access to new flavor launches.',
-      },
-      {
-        q: 'Can I pause or cancel my subscription?',
-        a: 'Yes, you can pause for up to 3 months or cancel anytime from your account dashboard. Changes take effect before your next billing cycle.',
-      },
-      {
-        q: 'When does my subscription box ship?',
-        a: 'Boxes ship on the 1st of each month. You will receive a tracking notification 24 hours before dispatch.',
+        q: 'Are your ingredients locally sourced?',
+        a: 'We source dairy, eggs, and most produce within 150 miles of our Portland production kitchen. We partner with over 12 regional farms and update our sourcing partners seasonally.',
       },
     ],
   },
   {
-    category: 'Loyalty & Rewards',
-    items: [
+    heading: 'Subscriptions',
+    faqs: [
       {
-        q: 'How do I earn Sprinkle points?',
-        a: 'You earn 1 point per $1 spent on regular orders, 2x on Classic subscriptions, and 3x on Deluxe subscriptions. You also earn 200 bonus points for each successful friend referral.',
+        q: 'Can I customize my subscription box?',
+        a: 'Absolutely. With any ScoopCraft subscription, you can set flavor preferences (adventurous, classic, vegan-only, etc.), choose box sizes, and skip months whenever you need. Manage everything from your account dashboard.',
       },
       {
-        q: 'What are the loyalty tiers?',
-        a: 'Sprinkle (0–499 pts), Swirl (500–1,499 pts), and Sundae Supreme (1,500+ pts). Higher tiers unlock exclusive discounts, early flavor access, and free delivery.',
-      },
-      {
-        q: 'How do I redeem my points?',
-        a: 'At checkout, you can apply your points for a discount (100 points = $1 off). You can also redeem points for free scoops or exclusive merchandise from the loyalty shop.',
+        q: 'How do I cancel my subscription?',
+        a: "You can cancel anytime from your Account Settings — no phone calls, no hassle. Cancellations made before your next billing date take effect immediately and you won't be charged again.",
       },
     ],
   },
@@ -95,73 +61,79 @@ const faqs = [
 
 export default function FAQPage() {
   return (
-    <div style={{ backgroundColor: 'var(--background)' }}>
+    <>
       {/* Header */}
-      <section
-        className="py-16 md:py-20"
-        style={{ background: 'linear-gradient(135deg, #FFF8F0 0%, #FEFAE0 50%, #FFF0F3 100%)' }}
-      >
-        <div className="mx-auto max-w-3xl px-4 md:px-6 text-center">
-          <span
-            className="inline-block rounded-full px-3 py-1 text-sm font-medium mb-6"
-            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+      <section className="py-20 px-4 text-center" style={{ backgroundColor: 'var(--muted)' }}>
+        <div className="mx-auto max-w-2xl">
+          <p
+            className="mb-3 text-sm font-semibold uppercase tracking-widest"
+            style={{ color: 'var(--secondary)' }}
           >
             Help Center
-          </span>
+          </p>
           <h1
-            className="text-4xl md:text-5xl mb-4"
-            style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: 'var(--foreground)' }}
+            className="mb-4 text-5xl md:text-6xl"
+            style={{ fontFamily: "'DM Serif Display', serif", color: 'var(--foreground)' }}
           >
             Frequently Asked Questions
           </h1>
           <p className="text-lg" style={{ color: 'var(--foreground-secondary)' }}>
-            Everything you need to know about ScoopCraft. Can&apos;t find what you&apos;re looking for?{' '}
-            <Link href="/contact" className="font-medium" style={{ color: 'var(--primary)' }}>
-              Contact us.
-            </Link>
+            Can&apos;t find what you&apos;re looking for? Reach us at{' '}
+            <a
+              href="mailto:hello@scoopcraft.co"
+              style={{ color: 'var(--primary)' }}
+              className="underline underline-offset-2"
+            >
+              hello@scoopcraft.co
+            </a>
           </p>
         </div>
       </section>
 
-      {/* FAQ Sections */}
-      <section className="mx-auto max-w-3xl px-4 md:px-6 py-12 md:py-16">
-        <div className="space-y-12">
-          {faqs.map((section) => (
-            <div key={section.category}>
+      {/* FAQ sections */}
+      <section className="py-16 px-4" style={{ backgroundColor: 'var(--background)' }}>
+        <div className="mx-auto max-w-3xl space-y-14">
+          {sections.map((section) => (
+            <div key={section.heading}>
               <h2
-                className="text-2xl mb-6 pb-3 border-b"
-                style={{
-                  fontFamily: "'DM Serif Display', Georgia, serif",
-                  color: 'var(--foreground)',
-                  borderColor: 'var(--border)',
-                }}
+                className="mb-6 text-2xl"
+                style={{ fontFamily: "'DM Serif Display', serif", color: 'var(--foreground)' }}
               >
-                {section.category}
+                {section.heading}
               </h2>
-              <div className="space-y-4">
-                {section.items.map((item) => (
+
+              <div className="space-y-3">
+                {section.faqs.map((faq) => (
                   <details
-                    key={item.q}
+                    key={faq.q}
                     className="group rounded-xl overflow-hidden"
                     style={{ border: '1px solid var(--border)' }}
                   >
                     <summary
-                      className="flex items-center justify-between px-6 py-4 cursor-pointer select-none font-medium hover:bg-muted transition-colors"
-                      style={{ color: 'var(--foreground)' }}
+                      className="flex cursor-pointer items-center justify-between gap-4 px-6 py-4 text-base font-medium select-none list-none"
+                      style={{
+                        backgroundColor: 'var(--surface)',
+                        color: 'var(--foreground)',
+                      }}
                     >
-                      {item.q}
+                      <span>{faq.q}</span>
                       <span
-                        className="ml-4 flex-shrink-0 text-lg transition-transform group-open:rotate-45"
+                        className="shrink-0 text-xl leading-none transition-transform duration-200 group-open:rotate-45"
                         style={{ color: 'var(--primary)' }}
+                        aria-hidden="true"
                       >
                         +
                       </span>
                     </summary>
                     <div
-                      className="px-6 pb-5 pt-1 text-sm leading-relaxed"
-                      style={{ color: 'var(--foreground-secondary)', backgroundColor: 'var(--surface)' }}
+                      className="px-6 py-4 text-sm leading-relaxed"
+                      style={{
+                        backgroundColor: 'var(--muted)',
+                        color: 'var(--foreground-secondary)',
+                        borderTop: '1px solid var(--border)',
+                      }}
                     >
-                      {item.a}
+                      {faq.a}
                     </div>
                   </details>
                 ))}
@@ -169,30 +141,33 @@ export default function FAQPage() {
             </div>
           ))}
         </div>
+      </section>
 
-        {/* Still have questions */}
-        <div
-          className="mt-16 rounded-2xl p-8 text-center"
-          style={{ backgroundColor: 'var(--muted)' }}
-        >
+      {/* Still have questions */}
+      <section
+        className="py-16 px-4 text-center"
+        style={{ backgroundColor: 'var(--muted)', borderTop: '1px solid var(--border)' }}
+      >
+        <div className="mx-auto max-w-xl">
           <h3
-            className="text-2xl mb-2"
-            style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: 'var(--foreground)' }}
+            className="mb-3 text-2xl"
+            style={{ fontFamily: "'DM Serif Display', serif", color: 'var(--foreground)' }}
           >
             Still have questions?
           </h3>
-          <p className="text-sm mb-6" style={{ color: 'var(--foreground-secondary)' }}>
-            Our team typically responds within a few hours.
+          <p className="mb-6 text-sm" style={{ color: 'var(--foreground-secondary)' }}>
+            Our team is available Monday through Friday, 9 AM – 6 PM EST. We typically respond within
+            a few hours.
           </p>
-          <Link
+          <a
             href="/contact"
-            className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-base font-semibold transition-all hover:brightness-110"
-            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', boxShadow: '0 4px 12px rgba(212,83,106,0.3)' }}
+            className="inline-block rounded-full px-7 py-3 text-sm font-semibold transition-opacity duration-150 hover:opacity-90"
+            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
           >
-            Get in Touch
-          </Link>
+            Contact Us
+          </a>
         </div>
       </section>
-    </div>
+    </>
   );
 }
