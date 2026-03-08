@@ -19,10 +19,8 @@ jobs:
       - run: npm ci --legacy-peer-deps
       - name: Lint
         run: npm run lint
-        continue-on-error: true  # Remove once ESLint config is set up by engineering-manager
       - name: Type Check
         run: npm run typecheck
-        continue-on-error: true  # Remove once full Next.js project is initialized
 
   test:
     name: Unit Tests
@@ -36,7 +34,6 @@ jobs:
       - run: npm ci --legacy-peer-deps
       - name: Run Tests
         run: npm test -- --reporter=verbose
-        continue-on-error: true  # Remove once Vitest tests are written by engineering-manager
 
   build:
     name: Build Check
@@ -55,4 +52,3 @@ jobs:
       - run: npm ci --legacy-peer-deps
       - name: Build
         run: npm run build
-        continue-on-error: true  # Remove once engineering-manager completes Next.js scaffold

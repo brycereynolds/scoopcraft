@@ -11,9 +11,27 @@ on:
         default: 'Manual trigger'
 
 jobs:
+  build-check:
+    name: Build Check (Gate)
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_APP_URL: https://scoopcraft-web-production.up.railway.app
+      DATABASE_URL: postgresql://stub:stub@localhost:5432/stub
+      NODE_ENV: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - name: Build
+        run: npm run build
+
   notify-deploy:
     name: Notify Deploy
     runs-on: ubuntu-latest
+    needs: build-check
     steps:
       - uses: actions/checkout@v4
       - name: Trigger Railway Deployment
