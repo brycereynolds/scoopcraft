@@ -14,10 +14,6 @@ jobs:
   build-check:
     name: Build Check (Gate)
     runs-on: ubuntu-latest
-    env:
-      NEXT_PUBLIC_APP_URL: https://scoopcraft-web-production.up.railway.app
-      DATABASE_URL: postgresql://stub:stub@localhost:5432/stub
-      NODE_ENV: production
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,6 +22,11 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - name: Build
+        # NODE_ENV=production only for the build step (not for npm ci, which needs devDeps)
+        env:
+          NEXT_PUBLIC_APP_URL: https://scoopcraft-web-production.up.railway.app
+          DATABASE_URL: postgresql://stub:stub@localhost:5432/stub
+          NODE_ENV: production
         run: npm run build
 
   notify-deploy:
