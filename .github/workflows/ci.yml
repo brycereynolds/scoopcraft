@@ -38,11 +38,6 @@ jobs:
   build:
     name: Build Check
     runs-on: ubuntu-latest
-    env:
-      NEXT_PUBLIC_APP_URL: https://scoopcraft-web-production.up.railway.app
-      # Stub values for build-time env vars (real values set in Railway)
-      DATABASE_URL: postgresql://stub:stub@localhost:5432/stub
-      NODE_ENV: production
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -52,3 +47,8 @@ jobs:
       - run: npm ci --legacy-peer-deps
       - name: Build
         run: npm run build
+        env:
+          NEXT_PUBLIC_APP_URL: https://scoopcraft-web-production.up.railway.app
+          # Stub values for build-time env vars (real values set in Railway)
+          DATABASE_URL: postgresql://stub:stub@localhost:5432/stub
+          NODE_ENV: production

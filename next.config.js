@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   // Keep native Node packages out of the webpack bundle so their browser/wasm
   // fallbacks are never resolved (e.g. @node-rs/argon2 in middleware).
   serverExternalPackages: ["@node-rs/argon2"],
